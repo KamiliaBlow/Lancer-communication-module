@@ -229,26 +229,29 @@ class LancerCommunicator {
 		});
 
         // Регистрация инструмента
-        Hooks.on('renderSceneControls', (controls, html) => {
-            const tokenToolPanel = html.find('#tools-panel-token');
-            
-            if (tokenToolPanel.length) {
-                if (!tokenToolPanel.find('.lancer-communicator').length) {
-                    const communicatorButton = $(`
-                        <li class="scene-tool lancer-communicator" data-tool="communicator" title="${game.i18n.localize("LANCER.Settings.Communicator")}">
-                            <i class="fas fa-satellite-dish"></i>
-                        </li>
-                    `);
+		Hooks.on('renderSceneControls', (controls, html) => {
+			// Проверяем, является ли текущий пользователь ГМ
+			if (!game.user.isGM) return;
 
-                    communicatorButton.on('click', (event) => {
-                        event.preventDefault();
-                        this.openCommunicatorSettings();
-                    });
+			const tokenToolPanel = html.find('#tools-panel-token');
+			
+			if (tokenToolPanel.length) {
+				if (!tokenToolPanel.find('.lancer-communicator').length) {
+					const communicatorButton = $(`
+						<li class="scene-tool lancer-communicator" data-tool="communicator" title="${game.i18n.localize("LANCER.Settings.Communicator")}">
+							<i class="fas fa-satellite-dish"></i>
+						</li>
+					`);
 
-                    tokenToolPanel.append(communicatorButton);
-                }
-            }
-        });
+					communicatorButton.on('click', (event) => {
+						event.preventDefault();
+						this.openCommunicatorSettings();
+					});
+
+					tokenToolPanel.append(communicatorButton);
+				}
+			}
+		});
 		
 		// Регистрация обработчика сообщений
 		this.initSocketListeners();
