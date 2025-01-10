@@ -26,16 +26,11 @@
             "name": "KamiliaBlow"
         }
     ],
-	"dependencies": [
-        {
-            "name": "libwrapper",
-            "type": "module"
-        }
-    ],
     "scripts": [
         "./scripts/communicator.js"
     ],
 	"esmodule": true,
+	"socket": true,
     "styles": [
         "./styles/communicator.css"
     ]

@@ -1,15 +1,15 @@
 class LancerCommunicator {
     static sendCommunicatorMessage(characterName, portraitPath, message, soundPath) {
-        // Создаем объект с данными сообщения ПРЯМО СЕЙЧАС
         const messageData = {
-			characterName: characterName,
+            characterName: characterName,
             portrait: portraitPath,
             text: message,
             sound: soundPath || null,
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            senderId: game.user.id
         };
 
-        // Используем socket для мгновенной отправки
+        // Отправка с типом сообщения
         game.socket.emit('module.lancer-communicator', {
             type: 'showMessage',
             data: messageData
@@ -20,12 +20,22 @@ class LancerCommunicator {
     }
 
     static initSocketListeners() {
-        game.socket.on('module.lancer-communicator', (payload) => {
-            if (payload.type === 'showMessage') {
-                this.showCommunicatorMessage(payload.data);
-            }
-        });
-    }
+		console.log("Инициализация socket listeners");
+
+		if (!game.socket) {
+			console.error("Socket не доступен при инициализации!");
+			return;
+		}
+
+		game.socket.on('module.lancer-communicator', (payload) => {
+			console.log("Получено сообщение через socket:", payload);
+
+			if (payload.type === 'showMessage') {
+				// Убираем проверку senderId
+				this.showCommunicatorMessage(payload.data);
+			}
+		});
+	}
 
     static showCommunicatorMessage(messageData) {
 		// Находим и полностью удаляем предыдущее сообщение
@@ -70,23 +80,36 @@ class LancerCommunicator {
 		messageBox.data('typingSound', typingSound);
 
 		let index = 0;
-		const typingInterval = setInterval(() => {
+		const element = messageBox.find('.message-text');
+
+		const typing = () => {
 			if (index < messageData.text.length) {
-				const displayText = messageData.text.slice(0, index + 1).toUpperCase();
+				// Добавление символа
+				element.text(messageData.text.slice(0, index + 1).toUpperCase());
 				
-				messageBox.find('.message-text').text(displayText);
-				
-				if (typingSound && index % 2 === 0) {
-					typingSound.currentTime = 0;
-					typingSound.volume = voiceVolume;
-					typingSound.play().catch(e => console.error("Ошибка воспроизведения звука:", e));
+				// Воспроизведение голоса персонажа для каждого символа
+				if (typingSound && messageData.text[index] !== ' ') {
+					const voiceClone = typingSound.cloneNode();
+					
+					// Динамические вариации звука
+					voiceClone.playbackRate = 0.9 + Math.random() * 0.2; // Случайные вариации высоты
+					
+					// Флуктуация громкости
+					voiceClone.volume = Math.max(0, Math.min(1, 
+						voiceVolume * (0.9 + Math.random() * 0.2)
+					));
+					
+					voiceClone.currentTime = 0;
+					voiceClone.play().catch(e => console.error("Ошибка воспроизведения звука:", e));
 				}
 				
-				index++;
-			} else {
-				// Полная остановка при завершении печати
-				clearInterval(typingInterval);
+				// Случайная задержка в стиле Undertale (30-70 мс)
+				const delay = Math.random() * 40 + 30;
 				
+				index++;
+				setTimeout(typing, delay);
+			} else {
+				// Логика завершения печати (как было в вашем оригинальном коде)
 				setTimeout(() => {
 					messageBox.addClass('collapsing');
 					
@@ -101,15 +124,15 @@ class LancerCommunicator {
 					}, 500);
 				}, 10000);
 			}
-		}, typingSpeed);
+		};
 
-		// Сохраняем интервал в данных элемента
-		messageBox.data('typingInterval', typingInterval);
+		// Запускаем печать
+		typing();
 
 		// Добавляем возможность прерывания сообщения
 		messageBox.on('click', () => {
 			// Немедленная остановка всех процессов
-			clearInterval(typingInterval);
+			clearTimeout(typing);
 			
 			if (typingSound) {
 				typingSound.pause();
@@ -117,7 +140,7 @@ class LancerCommunicator {
 			}
 			
 			// Показываем полный текст
-			messageBox.find('.message-text').text(messageData.text.toUpperCase());
+			element.text(messageData.text.toUpperCase());
 			
 			// Быстрое закрытие
 			messageBox.addClass('collapsing');
@@ -125,7 +148,9 @@ class LancerCommunicator {
 		});
 	}
 
-    static init() {
+    static init() {		
+		console.log("Инициализация LancerCommunicator");
+	
         // Регистрация настроек
         game.settings.register('lancer-communicator', 'currentPortrait', {
             name: game.i18n.localize("LANCER.Settings.Portrait"),
@@ -224,7 +249,22 @@ class LancerCommunicator {
                 }
             }
         });
+		
+		// Регистрация обработчика сообщений
+		this.initSocketListeners();
     }
+	
+	static handleSocketMessage(payload) {
+		console.log("Получено сообщение:", payload);
+
+		// Проверяем структуру payload
+		if (payload && payload.type === 'showMessage') {
+			const messageData = payload.data;
+			
+			// Убираем проверку senderId, чтобы сообщение показывалось у всех
+			this.showCommunicatorMessage(messageData);
+		}
+	}
 
     static openCommunicatorSettings() {
 		const lastPortrait = game.settings.get('lancer-communicator', 'lastPortrait');
@@ -348,6 +388,6 @@ class LancerCommunicator {
 
 // Инициализация
 Hooks.once('ready', () => {
+    console.log("Инициализация LancerCommunicator");
     LancerCommunicator.init();
-    LancerCommunicator.initSocketListeners();
 });
