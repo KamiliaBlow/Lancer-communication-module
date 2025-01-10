@@ -1,0 +1,42 @@
+{
+    "name": "lancer-communicator",
+    "title": "Lancer Communicator",
+    "description": "Коммуникатор NPC для Lancer RPG",
+    "version": "0.2.0",
+	"languages": [
+        {
+            "lang": "en",
+            "name": "English",
+            "path": "lang/en.json"
+        },
+        {
+            "lang": "ru",
+            "name": "Русский",
+            "path": "lang/ru.json"
+        }
+    ],
+    "minimumCoreVersion": "11",
+    "compatibleCoreVersion": "12",
+	"compatibility": {
+		"minimum": 11,
+		"verified": 12
+	},
+    "authors": [
+        {
+            "name": "KamiliaBlow"
+        }
+    ],
+	"dependencies": [
+        {
+            "name": "libwrapper",
+            "type": "module"
+        }
+    ],
+    "scripts": [
+        "./scripts/communicator.js"
+    ],
+	"esmodule": true,
+    "styles": [
+        "./styles/communicator.css"
+    ]
+}

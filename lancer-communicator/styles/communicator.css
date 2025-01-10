@@ -1,0 +1,145 @@
+@font-face {
+    font-family: 'MOSCOW2024';
+    src: url('fonts/MOSCOW2024.otf') format('opentype');
+}
+
+.lancer-communicator-dialog .form-group {
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+.lancer-communicator-dialog label {
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.lancer-communicator-dialog input[type="text"],
+.lancer-communicator-dialog textarea {
+    width: 100%;
+    padding: 5px;
+    border-radius: 4px;
+}
+
+.lancer-communicator-dialog .input-group {
+    display: flex;
+    align-items: center;
+	gap: 5px; 
+}
+
+.lancer-communicator-dialog .input-group button {
+    height: 26px; /* Точно такая же высота как у инпута */
+    padding: 0 10px;
+    color: black;
+    cursor: pointer;
+    font-size: 12px;
+    white-space: nowrap; /* Запрещает перенос текста */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.lancer-communicator-dialog .input-group input {
+    flex-grow: 1;
+	height: 26px;
+}
+
+#lancer-communicator-message.top-screen {
+    position: fixed;
+    top: 90px;
+    left: 30%;
+    width: 40%;
+    display: flex;
+    justify-content: center;
+    z-index: 1000;
+}
+
+#lancer-communicator-message .communicator-container {
+    width: 100%; /* Изменил на 100% */ 
+    margin: 0 auto;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: green;
+    display: flex;
+    align-items: flex-start; /* Выравнивание по вертикали */
+    justify-content: flex-start; /* Выравнивание по левому краю */
+    padding: 10px;
+    border-radius: 10px;
+    box-sizing: border-box;
+	position: relative; /* Для абсолютного позиционирования курсора */
+}
+
+#lancer-communicator-message .portrait-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-right: 10px;
+    width: 80px; /* Фиксированная ширина */
+    flex-shrink: 0; /* Запрещаем уменьшение контейнера */
+}
+
+#lancer-communicator-message .portrait {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 5px;
+    flex-shrink: 0; /* Запрещаем уменьшение аватарки */
+}
+
+#lancer-communicator-message .message-text {
+	font-family: 'MOSCOW2024', monospace;
+    font-size: 14px;
+    flex-grow: 1;
+    word-wrap: break-word;
+    text-align: left; /* Выравнивание текста по левому краю */
+	text-transform: uppercase; /* Все буквы заглавные */
+}
+
+#lancer-communicator-message .message-text::after {
+    content: '|';
+    display: inline-block;
+    animation: blink 0.7s infinite;
+    margin-left: 2px;
+    color: green;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 1; }
+}
+
+#lancer-communicator-message, .portrait {
+    border: 1px solid #03FB8D;
+    box-shadow: 0 0 15px rgba(3, 251, 141, 0.8);
+    backdrop-filter: blur(5px);
+}
+
+@keyframes tv-collapse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(0.5);
+        opacity: 0.7;
+    }
+    100% {
+        transform: scale(0);
+        opacity: 0;
+    }
+}
+
+#lancer-communicator-message.collapsing {
+    animation: tv-collapse 0.5s ease-in forwards;
+    transform-origin: center;
+}
+
+#lancer-communicator-message .character-name {
+    font-family: 'MOSCOW2024', monospace;
+    color: #03FB8D;
+    text-align: center;
+    margin-top: 5px;
+    text-transform: uppercase;
+    width: 100%;
+    max-width: 80px; /* Максимальная ширина как у аватарки */
+    word-wrap: break-word; /* Перенос слов */
+}

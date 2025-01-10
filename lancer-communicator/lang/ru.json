@@ -1,0 +1,29 @@
+{
+    "LANCER.Settings": {
+		"Communicator": "Коммуникатор",
+		"CommunicatorSettings": "Настройки коммуникатора",
+        "CharacterName": "Имя персонажа",
+		"LastCharacterName": "Последнее имя персонажа",
+        "Portrait": "Портрет",
+        "SelectPortrait": "Выбрать портрет",
+		"LastSelectPortrait": "Последний выбранный портрет",
+        "MessageText": "Текст сообщения",
+		"Message": "Сообщение",
+        "SoundSelect": "Выбор звука",
+        "SelectSound": "Выбрать звук",
+		"DialingSound": "Звук набора текста",
+		"LastSelectSound": "Последний выбранный звук",
+        "ClearSound": "Очистить звук",
+        "Send": "Отправить",
+        "Cancel": "Отмена",
+        "Warnings": {
+            "NoCharacterName": "Пожалуйста, введите имя персонажа!",
+            "NoPortrait": "Пожалуйста, выберите портрет!",
+            "NoMessage": "Пожалуйста, введите сообщение!"
+        },
+        "TypeSettings": {
+            "TypingSpeed": "Скорость печати",
+            "VoiceVolume": "Громкость голоса"
+        }
+    }
+}
