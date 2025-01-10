@@ -1,5 +1,6 @@
 {
     "LANCER.Settings": {
+		"CreateMacro": "Create Macros",
 		"Communicator": "Communicator",
 		"CommunicatorSettings": "Communicator Settings",
         "CharacterName": "Character Name",

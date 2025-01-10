@@ -1,8 +1,8 @@
 {
     "name": "lancer-communicator",
     "title": "Lancer Communicator",
-    "description": "Коммуникатор NPC для Lancer RPG",
-    "version": "0.2.0",
+    "description": "NPC Communicator for Lancer RPG | Коммуникатор NPC для Lancer RPG",
+    "version": "0.3.0",
 	"languages": [
         {
             "lang": "en",

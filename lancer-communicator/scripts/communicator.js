@@ -268,7 +268,40 @@ class LancerCommunicator {
 			this.showCommunicatorMessage(messageData);
 		}
 	}
+	
+	static createCommunicatorMacro(characterName, portraitPath, message, soundPath) {
+		// Экранируем специальные символы в тексте сообщения
+		const escapedCharacterName = characterName.replace(/"/g, '\\"');
+		const escapedPortraitPath = portraitPath.replace(/"/g, '\\"');
+		const escapedMessage = message.replace(/"/g, '\\"')
+									   .replace(/\n/g, '\\n');
+		const escapedSoundPath = (soundPath || '').replace(/"/g, '\\"');
 
+		const macroName = `Communicator: ${escapedCharacterName}`;
+		
+		Macro.create({
+			name: macroName,
+			type: 'script',
+			scope: 'global',
+			command: `
+				if (game.modules.get('lancer-communicator')?.active) {
+					game.modules.get('lancer-communicator').api.sendCommunicatorMessage(
+						"${escapedCharacterName}", 
+						"${escapedPortraitPath}", 
+						\`${escapedMessage}\`, 
+						"${escapedSoundPath}"
+					);
+				} else {
+					ui.notifications.warn("Lancer Communicator module is not active");
+				}
+			`
+		}).then(macro => {
+			ui.notifications.info(`Macro "${macroName}" created successfully`);
+		}).catch(error => {
+			ui.notifications.error(`Error creating macro: ${error}`);
+		});
+	}
+	
     static openCommunicatorSettings() {
 		const lastPortrait = game.settings.get('lancer-communicator', 'lastPortrait');
 		const lastSound = game.settings.get('lancer-communicator', 'lastSound');
@@ -336,6 +369,34 @@ class LancerCommunicator {
 						this.sendCommunicatorMessage(characterName, portraitPath, message, soundPath);
                     }
                 },
+				macro: {
+					label: game.i18n.localize("LANCER.Settings.CreateMacro"),
+					callback: () => {
+						const characterName = document.getElementById('character-name').value;
+						const portraitPath = document.getElementById('portrait-path').value;
+						const message = document.getElementById('message-input').value;
+						const soundPath = document.getElementById('sound-path').value;
+
+						// Валидация (как в методе send)
+						if (!characterName.trim()) {
+							ui.notifications.warn(game.i18n.localize("LANCER.Settings.Warnings.NoCharacterName"));
+							return false;
+						}
+
+						if (!portraitPath) {
+							ui.notifications.warn(game.i18n.localize("LANCER.Settings.Warnings.NoPortrait"));
+							return false;
+						}
+
+						if (!message.trim()) {
+							ui.notifications.warn(game.i18n.localize("LANCER.Settings.Warnings.NoMessage"));
+							return false;
+						}
+
+						// Создаем макрос
+						this.createCommunicatorMacro(characterName, portraitPath, message, soundPath);
+					}
+				},
                 cancel: {
                     label: game.i18n.localize("LANCER.Settings.Cancel")
                 }
@@ -390,6 +451,12 @@ class LancerCommunicator {
 }
 
 // Инициализация
+Hooks.once('init', () => {
+    game.modules.get('lancer-communicator').api = {
+        sendCommunicatorMessage: LancerCommunicator.sendCommunicatorMessage.bind(LancerCommunicator)
+    };
+});
+
 Hooks.once('ready', () => {
     console.log("Инициализация LancerCommunicator");
     LancerCommunicator.init();
