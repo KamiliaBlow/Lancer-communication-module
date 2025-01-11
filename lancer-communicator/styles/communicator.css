@@ -63,8 +63,6 @@
     align-items: flex-start; /* Выравнивание по вертикали */
     justify-content: flex-start; /* Выравнивание по левому краю */
     padding: 10px;
-    border-radius: 10px;
-    box-sizing: border-box;
 	position: relative; /* Для абсолютного позиционирования курсора */
 }
 
@@ -142,4 +140,182 @@
     width: 100%;
     max-width: 80px; /* Максимальная ширина как у аватарки */
     word-wrap: break-word; /* Перенос слов */
+}
+
+/* Базовый стиль */
+#lancer-communicator-message.style-green {
+    border: 1px solid #03FB8D;
+    box-shadow: 0 0 15px rgba(3, 251, 141, 0.8);
+	background-color: rgba(0, 255, 0, 0.1);
+    border-color: green;
+    color: green;
+}
+
+/* Синий стиль */
+#lancer-communicator-message.style-blue {
+    border: 1px solid #00A4FF;
+    box-shadow: 0 0 15px rgba(0, 164, 255, 0.8);
+	background-color: rgba(0, 0, 255, 0.1);
+    border-color: blue;
+    color: #00A4FF;
+}
+#lancer-communicator-message.style-blue .message-text {
+    color: #00A4FF;
+}
+#lancer-communicator-message.style-blue .character-name {
+    color: #00A4FF;
+}
+#lancer-communicator-message.style-blue .portrait {
+    border-color: #00A4FF;
+    box-shadow: 0 0 10px rgba(0, 164, 255, 0.5);
+}
+#lancer-communicator-message.style-blue .message-text::after {
+    color: #00A4FF;
+}
+
+/* Желтый стиль */
+#lancer-communicator-message.style-yellow {
+    border: 1px solid #FFD700;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+	background-color: rgba(255, 255, 0, 0.1);
+    border-color: yellow;
+    color: #FFD700;
+}
+#lancer-communicator-message.style-yellow .message-text {
+    color: #FFD700;
+}
+#lancer-communicator-message.style-yellow .character-name {
+    color: #FFD700;
+}
+#lancer-communicator-message.style-yellow .portrait {
+    border-color: #FFD700;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+#lancer-communicator-message.style-yellow .message-text::after {
+    color: #FFD700;
+}
+
+/* Красный стиль */
+#lancer-communicator-message.style-red {
+    border: 1px solid #FF0000;
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
+	background-color: rgba(255, 0, 0, 0.1);
+    border-color: red;
+    color: #FF0000;
+}
+#lancer-communicator-message.style-red .message-text {
+    color: #FF0000;
+}
+#lancer-communicator-message.style-red .character-name {
+    color: #FF0000;
+}
+#lancer-communicator-message.style-red .portrait {
+    border-color: #FF0000;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+}
+#lancer-communicator-message.style-red .message-text::after {
+    color: #FF0000;
+}
+
+/* Поврежденный стиль с анимацией */
+#lancer-communicator-message.style-damaged {
+    border: 1px solid darkred;
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
+    color: darkred;
+	background-color: rgba(128, 0, 0, 0.1);
+    border-color: maroon;
+    animation: glitch-damage 0.3s infinite;
+}
+#lancer-communicator-message.style-damaged .message-text {
+    color: darkred;
+    text-shadow: 2px 2px 4px rgba(255, 0, 0, 0.5);
+}
+#lancer-communicator-message.style-damaged .character-name {
+    color: darkred;
+    text-shadow: 1px 1px 2px rgba(255, 0, 0, 0.5);
+}
+#lancer-communicator-message.style-damaged .portrait {
+    border-color: darkred;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+    transform: skew(-5deg);
+}
+#lancer-communicator-message.style-damaged .message-text::after {
+    color: darkred;
+}
+
+@keyframes shake-border {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    10% { transform: translate(-1px, 1px) rotate(-0.5deg); }
+    20% { transform: translate(1px, -1px) rotate(0.5deg); }
+    30% { transform: translate(-1px, 0) rotate(-0.3deg); }
+    40% { transform: translate(1px, 0) rotate(0.3deg); }
+    50% { transform: translate(0, 1px) rotate(0.2deg); }
+    60% { transform: translate(0, -1px) rotate(-0.2deg); }
+}
+
+@keyframes portrait-shake {
+    0%, 100% { 
+        transform: translate(0, 0) rotate(0deg) scale(1);
+    }
+    25% { 
+        transform: translate(-2px, 1px) rotate(-0.5deg) scale(1.02);
+    }
+    50% { 
+        transform: translate(2px, -1px) rotate(0.5deg) scale(0.98);
+    }
+    75% { 
+        transform: translate(-1px, 2px) rotate(0.3deg) scale(1.01);
+    }
+}
+
+@keyframes text-glitch {
+    0%, 100% { 
+        transform: translate(0, 0);
+        text-shadow: none;
+    }
+    25% { 
+        transform: translate(-2px, -2px);
+        text-shadow: 2px 2px 0 rgba(255, 0, 0, 0.3);
+    }
+    50% { 
+        transform: translate(2px, 2px);
+        text-shadow: -2px -2px 0 rgba(0, 0, 255, 0.3);
+    }
+    75% { 
+        transform: translate(-2px, 2px);
+        text-shadow: 2px -2px 0 rgba(0, 255, 0, 0.3);
+    }
+}
+
+#lancer-communicator-message.style-damaged .communicator-container {
+    animation: shake-border 0.7s infinite;
+    border: 2px solid darkred;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+}
+
+#lancer-communicator-message.style-damaged .message-text {
+    position: relative;
+    animation: text-glitch 0.6s infinite;
+    color: #FF4444;
+}
+
+#lancer-communicator-message.style-damaged .character-name {
+    animation: text-glitch 0.6s infinite alternate;
+    color: #FF2222;
+}
+
+#lancer-communicator-message.style-damaged .portrait {
+    animation: portrait-shake 0.15s infinite;
+    filter: 
+        contrast(120%) 
+        brightness(110%);
+    box-shadow: 
+        0 0 5px rgba(255, 0, 0, 0.3),
+        1px 1px 3px rgba(255, 0, 0, 0.2);
+    transform-origin: center;
+    transition: all 0.1s ease;
+}
+
+#lancer-communicator-message.style-damaged .portrait:hover {
+    animation-play-state: paused;
 }

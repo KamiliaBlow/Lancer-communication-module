@@ -1,12 +1,13 @@
 class LancerCommunicator {
-    static sendCommunicatorMessage(characterName, portraitPath, message, soundPath) {
+    static sendCommunicatorMessage(characterName, portraitPath, message, soundPath, style = 'green') {
         const messageData = {
             characterName: characterName,
             portrait: portraitPath,
             text: message,
             sound: soundPath || null,
             timestamp: Date.now(),
-            senderId: game.user.id
+            senderId: game.user.id,
+			style: style // Добавляем стиль
         };
 
         // Отправка с типом сообщения
@@ -41,24 +42,25 @@ class LancerCommunicator {
 		// Находим и полностью удаляем предыдущее сообщение
 		const existingMessage = $('#lancer-communicator-message');
 		if (existingMessage.length) {
-			// Принудительно останавливаем все процессы предыдущего сообщения
-			const existingInterval = existingMessage.data('typingInterval');
-			const existingSound = existingMessage.data('typingSound');
-			
-			if (existingInterval) {
-				clearInterval(existingInterval);
+			// Устанавливаем флаг прерывания для существующего сообщения
+			const existingData = existingMessage.data('communicatorData');
+			if (existingData) {
+				existingData.isCancelled = true;
 			}
-			
+
+			// Останавливаем звук
+			const existingSound = existingMessage.data('typingSound');
 			if (existingSound) {
 				existingSound.pause();
 				existingSound.currentTime = 0;
 			}
-			
+
+			// Удаляем существующее сообщение
 			existingMessage.remove();
 		}
 
 		const messageBox = $(`
-			<div id="lancer-communicator-message" class="top-screen">
+			<div id="lancer-communicator-message" class="top-screen style-${messageData.style || 'green'}">
 				<div class="communicator-container">
 					<div class="portrait-container">
 						<img src="${messageData.portrait}" class="portrait">
@@ -76,13 +78,22 @@ class LancerCommunicator {
 		const typingSpeed = game.settings.get('lancer-communicator', 'typingSpeed');
 		const voiceVolume = game.settings.get('lancer-communicator', 'voiceVolume');
 
-		// Сохраняем звук и интервал в данных элемента
-		messageBox.data('typingSound', typingSound);
-
 		let index = 0;
 		const element = messageBox.find('.message-text');
 
+		// НОВОЕ: Объект для хранения состояния
+		const communicatorData = {
+			isCancelled: false
+		};
+
+		// Сохраняем данные в элементе
+		messageBox.data('communicatorData', communicatorData);
+		messageBox.data('typingSound', typingSound);
+
 		const typing = () => {
+			// Проверяем флаг прерывания
+			if (communicatorData.isCancelled) return;
+
 			if (index < messageData.text.length) {
 				// Добавление символа
 				element.text(messageData.text.slice(0, index + 1).toUpperCase());
@@ -92,7 +103,7 @@ class LancerCommunicator {
 					const voiceClone = typingSound.cloneNode();
 					
 					// Динамические вариации звука
-					voiceClone.playbackRate = 0.9 + Math.random() * 0.2; // Случайные вариации высоты
+					voiceClone.playbackRate = 0.9 + Math.random() * 0.2;
 					
 					// Флуктуация громкости
 					voiceClone.volume = Math.max(0, Math.min(1, 
@@ -109,19 +120,21 @@ class LancerCommunicator {
 				index++;
 				setTimeout(typing, delay);
 			} else {
-				// Логика завершения печати (как было в вашем оригинальном коде)
+				// Логика завершения печати
 				setTimeout(() => {
-					messageBox.addClass('collapsing');
-					
-					// Полная остановка звука
-					if (typingSound) {
-						typingSound.pause();
-						typingSound.currentTime = 0;
+					if (!communicatorData.isCancelled) {
+						messageBox.addClass('collapsing');
+						
+						// Полная остановка звука
+						if (typingSound) {
+							typingSound.pause();
+							typingSound.currentTime = 0;
+						}
+						
+						setTimeout(() => {
+							messageBox.remove();
+						}, 500);
 					}
-					
-					setTimeout(() => {
-						messageBox.remove();
-					}, 500);
 				}, 10000);
 			}
 		};
@@ -129,11 +142,12 @@ class LancerCommunicator {
 		// Запускаем печать
 		typing();
 
-		// Добавляем возможность прерывания сообщения
+		// Обработчик прерывания
 		messageBox.on('click', () => {
-			// Немедленная остановка всех процессов
-			clearTimeout(typing);
+			// Устанавливаем флаг прерывания
+			communicatorData.isCancelled = true;
 			
+			// Останавливаем звук
 			if (typingSound) {
 				typingSound.pause();
 				typingSound.currentTime = 0;
@@ -269,13 +283,14 @@ class LancerCommunicator {
 		}
 	}
 	
-	static createCommunicatorMacro(characterName, portraitPath, message, soundPath) {
+	static createCommunicatorMacro(characterName, portraitPath, message, soundPath, style) {
 		// Экранируем специальные символы в тексте сообщения
 		const escapedCharacterName = characterName.replace(/"/g, '\\"');
 		const escapedPortraitPath = portraitPath.replace(/"/g, '\\"');
 		const escapedMessage = message.replace(/"/g, '\\"')
 									   .replace(/\n/g, '\\n');
 		const escapedSoundPath = (soundPath || '').replace(/"/g, '\\"');
+		const escapedStyle = style.replace(/"/g, '\\"');
 
 		const macroName = `Communicator: ${escapedCharacterName}`;
 		
@@ -289,7 +304,8 @@ class LancerCommunicator {
 						"${escapedCharacterName}", 
 						"${escapedPortraitPath}", 
 						\`${escapedMessage}\`, 
-						"${escapedSoundPath}"
+						"${escapedSoundPath}",
+						"${escapedStyle}"
 					);
 				} else {
 					ui.notifications.warn("Lancer Communicator module is not active");
@@ -334,6 +350,17 @@ class LancerCommunicator {
 							<button type="button" id="clear-sound">${game.i18n.localize("LANCER.Settings.ClearSound")}</button>
 						</div>
 					</div>
+					<div class="form-group">
+						<label>${game.i18n.localize("LANCER.Settings.MessageStyle")}</label>
+						<select id="message-style">
+							<option value="green">${game.i18n.localize("LANCER.Settings.MSGStyleGr")}</option>
+							<option value="blue">${game.i18n.localize("LANCER.Settings.MSGStyleBl")}</option>
+							<option value="yellow">${game.i18n.localize("LANCER.Settings.MSGStyleYe")}</option>
+							<option value="red">${game.i18n.localize("LANCER.Settings.MSGStyleRe")}</option>
+							<option value="damaged">${game.i18n.localize("LANCER.Settings.MSGStyleDm")}</option>
+						</select>
+						<div id="style-preview" class="style-preview"></div>
+					</div>
 				</form>
 			`,
             buttons: {
@@ -344,6 +371,7 @@ class LancerCommunicator {
 						const portraitPath = document.getElementById('portrait-path').value;
 						const message = document.getElementById('message-input').value;
 						const soundPath = document.getElementById('sound-path').value;
+						const style = document.getElementById('message-style').value;
 
 						// Валидация
 						if (!characterName.trim()) {
@@ -366,7 +394,7 @@ class LancerCommunicator {
 						game.settings.set('lancer-communicator', 'lastSound', soundPath);
 						game.settings.set('lancer-communicator', 'lastCharacterName', characterName);
 
-						this.sendCommunicatorMessage(characterName, portraitPath, message, soundPath);
+						this.sendCommunicatorMessage(characterName, portraitPath, message, soundPath, style);
                     }
                 },
 				macro: {
@@ -376,6 +404,7 @@ class LancerCommunicator {
 						const portraitPath = document.getElementById('portrait-path').value;
 						const message = document.getElementById('message-input').value;
 						const soundPath = document.getElementById('sound-path').value;
+						const style = document.getElementById('message-style').value;
 
 						// Валидация (как в методе send)
 						if (!characterName.trim()) {
@@ -394,7 +423,7 @@ class LancerCommunicator {
 						}
 
 						// Создаем макрос
-						this.createCommunicatorMacro(characterName, portraitPath, message, soundPath);
+						this.createCommunicatorMacro(characterName, portraitPath, message, soundPath, style);
 					}
 				},
                 cancel: {
@@ -403,12 +432,13 @@ class LancerCommunicator {
             },
             render: (html) => {
                 // Обработчик выбора портрета
+				const styleSelect = html.find('#message-style');
+				const preview = html.find('#style-preview');
 				const lastPortrait = game.user.getFlag('lancer-communicator', 'lastPortrait');
 				if (lastPortrait) {
 					html.find('#portrait-path').val(lastPortrait);
 				}
-				
-				
+					
                 html.find('#select-portrait').on('click', () => {
 					const fp = new FilePicker({
 						type: 'image',
@@ -445,6 +475,88 @@ class LancerCommunicator {
 				html.find('#clear-sound').on('click', () => {
 					html.find('#sound-path').val('');
 				});
+				
+				preview.css({
+					'margin-top': '10px',
+					'padding': '10px',
+					'border': '1px solid',
+					'display': 'flex',
+					'align-items': 'center'
+				});
+				
+				function updatePreview() {
+					const selectedStyle = styleSelect.val();
+					
+					// Очищаем превью
+					preview.empty();
+					
+					// Создаем контейнер с динамическими стилями
+					const previewContent = $(`
+						<div class="style-preview-content" style="
+							border: 2px solid;
+							padding: 10px;
+							display: flex;
+							align-items: center;
+							width: 100%;
+							background-color: rgba(0,0,0,0.05);
+						">
+							<div class="preview-avatar" style="
+								width: 50px; 
+								height: 50px; 
+								border-radius: 50%;
+								margin-right: 10px;
+								background: #ccc;
+							"></div>
+							<div style="flex-grow: 1;">
+								<div class="preview-name" style="
+									font-weight: bold;
+									margin-bottom: 5px;
+								">Character Name</div>
+								<div class="preview-text">Message Preview</div>
+							</div>
+						</div>
+					`);
+
+					// Применяем стили в зависимости от выбранного варианта
+					switch(selectedStyle) {
+						case 'green':
+							previewContent.css({
+								'border-color': 'green',
+								'background-color': 'rgba(0, 255, 0, 0.1)'
+							});
+							break;
+						case 'blue':
+							previewContent.css({
+								'border-color': 'blue', 
+								'background-color': 'rgba(0, 0, 255, 0.1)'
+							});
+							break;
+						case 'yellow':
+							previewContent.css({
+								'border-color': 'yellow',
+								'background-color': 'rgba(255, 255, 0, 0.1)'
+							});
+							break;
+						case 'red':
+							previewContent.css({
+								'border-color': 'red',
+								'background-color': 'rgba(255, 0, 0, 0.1)'
+							});
+							break;
+						case 'damaged':
+							previewContent.css({
+								'border-color': 'darkred',
+								'background-color': 'rgba(139, 0, 0, 0.1)'
+							});
+							break;
+					}
+
+					// Добавляем в превью
+					preview.append(previewContent);
+				}
+				
+				styleSelect.on('change', updatePreview);
+				updatePreview(); // Первичная инициализация
             }
         }).render(true);
     }

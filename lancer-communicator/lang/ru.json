@@ -15,6 +15,12 @@
 		"DialingSound": "Звук набора текста",
 		"LastSelectSound": "Последний выбранный звук",
         "ClearSound": "Очистить звук",
+		"MessageStyle": "Стиль сообщения",
+		"MSGStyleGr": "Зеленый",
+		"MSGStyleBl": "Синий",
+		"MSGStyleYe": "Желтый",
+		"MSGStyleRe": "Красный",
+		"MSGStyleDm": "Глючный",
         "Send": "Отправить",
         "Cancel": "Отмена",
         "Warnings": {

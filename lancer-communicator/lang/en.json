@@ -15,6 +15,12 @@
 		"DialingSound": "Dialing sound",
 		"LastSelectSound": "Last selected sound",
         "ClearSound": "Clear Sound",
+		"MessageStyle": "Message Style",
+		"MSGStyleGr": "Green",
+		"MSGStyleBl": "Blue",
+		"MSGStyleYe": "Yellow",
+		"MSGStyleRe": "Red",
+		"MSGStyleDm": "Damaged",
         "Send": "Send",
         "Cancel": "Cancel",
         "Warnings": {
