@@ -1,36 +1,34 @@
 {
-    "LANCER.Settings": {
+	"LANCER.Settings": {
 		"CreateMacro": "Создать макрос",
 		"Communicator": "Коммуникатор",
 		"CommunicatorSettings": "Настройки коммуникатора",
-        "CharacterName": "Имя персонажа",
+		"CharacterName": "Имя персонажа",
 		"LastCharacterName": "Последнее имя персонажа",
-        "Portrait": "Портрет",
-        "SelectPortrait": "Выбрать портрет",
+		"Portrait": "Портрет",
+		"SelectPortrait": "Выбрать портрет",
 		"LastSelectPortrait": "Последний выбранный портрет",
-        "MessageText": "Текст сообщения",
+		"MessageText": "Текст сообщения",
 		"Message": "Сообщение",
-        "SoundSelect": "Выбор звука",
-        "SelectSound": "Выбрать звук",
+		"SoundSelect": "Выбор звука",
+		"SelectSound": "Выбрать звук",
 		"DialingSound": "Звук набора текста",
 		"LastSelectSound": "Последний выбранный звук",
-        "ClearSound": "Очистить звук",
+		"ClearSound": "Очистить звук",
 		"MessageStyle": "Стиль сообщения",
 		"MSGStyleGr": "Зеленый",
 		"MSGStyleBl": "Синий",
 		"MSGStyleYe": "Желтый",
 		"MSGStyleRe": "Красный",
 		"MSGStyleDm": "Глючный",
-        "Send": "Отправить",
-        "Cancel": "Отмена",
-        "Warnings": {
-            "NoCharacterName": "Пожалуйста, введите имя персонажа!",
-            "NoPortrait": "Пожалуйста, выберите портрет!",
-            "NoMessage": "Пожалуйста, введите сообщение!"
-        },
-        "TypeSettings": {
-            "TypingSpeed": "Скорость печати",
-            "VoiceVolume": "Громкость голоса"
-        }
-    }
+		"Send": "Отправить",
+		"Cancel": "Отмена",
+		"typingSpeed": "Скорость печати",
+		"voiceVolume": "Громкость голоса",
+		"Warnings": {
+			"NoCharacterName": "Пожалуйста, введите имя персонажа!",
+			"NoPortrait": "Пожалуйста, выберите портрет!",
+			"NoMessage": "Пожалуйста, введите сообщение!"
+		}
+	}
 }

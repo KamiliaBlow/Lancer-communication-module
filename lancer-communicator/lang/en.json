@@ -1,36 +1,34 @@
 {
-    "LANCER.Settings": {
+	"LANCER.Settings": {
 		"CreateMacro": "Create Macros",
 		"Communicator": "Communicator",
 		"CommunicatorSettings": "Communicator Settings",
-        "CharacterName": "Character Name",
+		"CharacterName": "Character Name",
 		"LastCharacterName": "Character's last name",
-        "Portrait": "Portrait",
-        "SelectPortrait": "Select Portrait",
+		"Portrait": "Portrait",
+		"SelectPortrait": "Select Portrait",
 		"LastSelectPortrait": "Last selected portrait",
-        "MessageText": "Message Text",
+		"MessageText": "Message Text",
 		"Message": "Message",
-        "SoundSelect": "Sound Selection",
-        "SelectSound": "Select Sound",
+		"SoundSelect": "Sound Selection",
+		"SelectSound": "Select Sound",
 		"DialingSound": "Dialing sound",
 		"LastSelectSound": "Last selected sound",
-        "ClearSound": "Clear Sound",
+		"ClearSound": "Clear Sound",
 		"MessageStyle": "Message Style",
 		"MSGStyleGr": "Green",
 		"MSGStyleBl": "Blue",
 		"MSGStyleYe": "Yellow",
 		"MSGStyleRe": "Red",
 		"MSGStyleDm": "Damaged",
-        "Send": "Send",
-        "Cancel": "Cancel",
-        "Warnings": {
-            "NoCharacterName": "Please enter character name!",
-            "NoPortrait": "Please select a portrait!",
-            "NoMessage": "Please enter a message!"
-        },
-        "TypeSettings": {
-            "TypingSpeed": "Typing Speed",
-            "VoiceVolume": "Voice Volume"
-        }
-    }
+		"Send": "Send",
+		"Cancel": "Cancel",
+		"typingSpeed": "Typing Speed",
+		"voiceVolume": "Voice Volume",
+		"Warnings": {
+			"NoCharacterName": "Please enter character name!",
+			"NoPortrait": "Please select a portrait!",
+			"NoMessage": "Please enter a message!"
+		}
+	}
 }

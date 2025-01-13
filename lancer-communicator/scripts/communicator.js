@@ -20,46 +20,41 @@ class LancerCommunicator {
         this.showCommunicatorMessage(messageData);
     }
 
-    static initSocketListeners() {
-		console.log("Инициализация socket listeners");
-
+		static initSocketListeners() {
 		if (!game.socket) {
 			console.error("Socket не доступен при инициализации!");
 			return;
 		}
 
+		// Использование стрелочной функции для корректного связывания контекста
 		game.socket.on('module.lancer-communicator', (payload) => {
-			console.log("Получено сообщение через socket:", payload);
-
-			if (payload.type === 'showMessage') {
-				// Убираем проверку senderId
+			if (payload?.type === 'showMessage') {
 				this.showCommunicatorMessage(payload.data);
 			}
 		});
 	}
 
     static showCommunicatorMessage(messageData) {
-		// Находим и полностью удаляем предыдущее сообщение
+		// Кэширование селекторов и элементов
+		const $body = $('body');
 		const existingMessage = $('#lancer-communicator-message');
+
+		// Оптимизированное удаление предыдущего сообщения
 		if (existingMessage.length) {
-			// Устанавливаем флаг прерывания для существующего сообщения
-			const existingData = existingMessage.data('communicatorData');
-			if (existingData) {
-				existingData.isCancelled = true;
+			const communicatorData = existingMessage.data('communicatorData');
+			communicatorData.isCancelled = true;
+
+			const typingSound = existingMessage.data('typingSound');
+			if (typingSound) {
+				typingSound.pause();
+				typingSound.currentTime = 0;
 			}
 
-			// Останавливаем звук
-			const existingSound = existingMessage.data('typingSound');
-			if (existingSound) {
-				existingSound.pause();
-				existingSound.currentTime = 0;
-			}
-
-			// Удаляем существующее сообщение
 			existingMessage.remove();
 		}
 
-		const messageBox = $(`
+		// Использование шаблонной функции для создания сообщения
+		const createMessageElement = () => `
 			<div id="lancer-communicator-message" class="top-screen style-${messageData.style || 'green'}">
 				<div class="communicator-container">
 					<div class="portrait-container">
@@ -69,178 +64,76 @@ class LancerCommunicator {
 					<div class="message-text"></div>
 				</div>
 			</div>
-		`).appendTo('body');
+		`;
 
-		// Создаем звук
-		const typingSound = messageData.sound ? new Audio(messageData.sound) : null;
+		const messageBox = $(createMessageElement()).appendTo($body);
+		const $messageText = messageBox.find('.message-text');
 
-		// Получаем настройки скорости
+		// Оптимизация звука
+		const typingSound = messageData.sound 
+			? new Audio(messageData.sound) 
+			: null;
+
 		const typingSpeed = game.settings.get('lancer-communicator', 'typingSpeed');
 		const voiceVolume = game.settings.get('lancer-communicator', 'voiceVolume');
 
-		let index = 0;
-		const element = messageBox.find('.message-text');
-
-		// НОВОЕ: Объект для хранения состояния
-		const communicatorData = {
-			isCancelled: false
-		};
-
-		// Сохраняем данные в элементе
+		const communicatorData = { isCancelled: false };
 		messageBox.data('communicatorData', communicatorData);
 		messageBox.data('typingSound', typingSound);
 
+		// Оптимизированная функция печати
 		const typing = () => {
-			// Проверяем флаг прерывания
 			if (communicatorData.isCancelled) return;
 
+			const currentText = messageData.text.slice(0, index + 1).toUpperCase();
+			$messageText.text(currentText);
+
+			if (typingSound && messageData.text[index] !== ' ') {
+				const voiceClone = typingSound.cloneNode();
+				voiceClone.playbackRate = 0.9 + Math.random() * 0.2;
+				voiceClone.volume = Math.max(0, Math.min(1, voiceVolume * (0.9 + Math.random() * 0.2)));
+				voiceClone.currentTime = 0;
+				voiceClone.play().catch(console.error);
+			}
+
+			index++;
 			if (index < messageData.text.length) {
-				// Добавление символа
-				element.text(messageData.text.slice(0, index + 1).toUpperCase());
-				
-				// Воспроизведение голоса персонажа для каждого символа
-				if (typingSound && messageData.text[index] !== ' ') {
-					const voiceClone = typingSound.cloneNode();
-					
-					// Динамические вариации звука
-					voiceClone.playbackRate = 0.9 + Math.random() * 0.2;
-					
-					// Флуктуация громкости
-					voiceClone.volume = Math.max(0, Math.min(1, 
-						voiceVolume * (0.9 + Math.random() * 0.2)
-					));
-					
-					voiceClone.currentTime = 0;
-					voiceClone.play().catch(e => console.error("Ошибка воспроизведения звука:", e));
-				}
-				
-				// Случайная задержка в стиле Undertale (30-70 мс)
-				const delay = Math.random() * 40 + 30;
-				
-				index++;
-				setTimeout(typing, delay);
+				setTimeout(typing, Math.random() * 40 + 30);
 			} else {
-				// Логика завершения печати
+				// Логика завершения
 				setTimeout(() => {
 					if (!communicatorData.isCancelled) {
 						messageBox.addClass('collapsing');
-						
-						// Полная остановка звука
 						if (typingSound) {
 							typingSound.pause();
 							typingSound.currentTime = 0;
 						}
-						
-						setTimeout(() => {
-							messageBox.remove();
-						}, 500);
+						setTimeout(() => messageBox.remove(), 500);
 					}
 				}, 10000);
 			}
 		};
 
-		// Запускаем печать
-		typing();
-
-		// Обработчик прерывания
+		// Клик для прерывания
 		messageBox.on('click', () => {
-			// Устанавливаем флаг прерывания
 			communicatorData.isCancelled = true;
-			
-			// Останавливаем звук
 			if (typingSound) {
 				typingSound.pause();
 				typingSound.currentTime = 0;
 			}
-			
-			// Показываем полный текст
-			element.text(messageData.text.toUpperCase());
-			
-			// Быстрое закрытие
+			$messageText.text(messageData.text.toUpperCase());
 			messageBox.addClass('collapsing');
 			setTimeout(() => messageBox.remove(), 500);
 		});
+
+		// Запуск печати
+		let index = 0;
+		typing();
 	}
 
-    static init() {		
-		console.log("Инициализация LancerCommunicator");
+    static init() {
 	
-        // Регистрация настроек
-        game.settings.register('lancer-communicator', 'currentPortrait', {
-            name: game.i18n.localize("LANCER.Settings.Portrait"),
-            scope: 'world',
-            config: false,
-            type: String,
-            default: ''
-        });
-
-        game.settings.register('lancer-communicator', 'currentMessage', {
-            name: game.i18n.localize("LANCER.Settings.Message"),
-            scope: 'world',
-            config: false,
-            type: String,
-            default: ''
-        });
-
-        game.settings.register('lancer-communicator', 'currentSound', {
-            name: game.i18n.localize("LANCER.Settings.DialingSound"),
-            scope: 'world',
-            config: false,
-            type: String,
-            default: ''
-        });
-		
-		// Новые настройки для сохранения последнего выбора
-		game.settings.register('lancer-communicator', 'lastPortrait', {
-			name: game.i18n.localize("LANCER.Settings.LastSelectPortrait"),
-			scope: 'world',
-			config: false,
-			type: String,
-			default: ''
-		});
-
-		game.settings.register('lancer-communicator', 'lastSound', {
-			name: game.i18n.localize("LANCER.Settings.LastSelectSound"),
-			scope: 'world',
-			config: false,
-			type: String,
-			default: ''
-		});
-
-		// Настройки скорости печати и звука
-		game.settings.register('lancer-communicator', 'typingSpeed', {
-			name: game.i18n.localize("LANCER.Settings.TypeSettings.TypingSpeed"),
-			scope: 'world',
-			config: true,
-			type: Number,
-			default: 50,
-			range: {
-				min: 10,
-				max: 200,
-				step: 10
-			}
-		});
-
-		game.settings.register('lancer-communicator', 'voiceVolume', {
-			name: game.i18n.localize("LANCER.Settings.TypeSettings.VoiceVolume"),
-			scope: 'world',
-			config: true,
-			type: Number,
-			default: 0.05,
-			range: {
-				min: 0,
-				max: 1,
-				step: 0.05
-			}
-		});
-		
-		game.settings.register('lancer-communicator', 'lastCharacterName', {	
-			name: game.i18n.localize("LANCER.Settings.TypeSettings.LastCharacterName"),
-			scope: 'world',
-			config: false,
-			type: String,
-			default: ''
-		});
+		this.registerSettings();
 
         // Регистрация инструмента
 		Hooks.on('renderSceneControls', (controls, html) => {
@@ -270,6 +163,42 @@ class LancerCommunicator {
 		// Регистрация обработчика сообщений
 		this.initSocketListeners();
     }
+	
+	static registerSettings() {
+		const settings = [
+			{ key: 'currentPortrait', type: String, default: '' },
+			{ key: 'currentMessage', type: String, default: '' },
+			{ key: 'currentSound', type: String, default: '' },
+			{ key: 'lastPortrait', type: String, default: '' },
+			{ key: 'lastSound', type: String, default: '' },
+			{ key: 'lastCharacterName', type: String, default: '' },
+			{ 
+				key: 'typingSpeed', 
+				type: Number, 
+				default: 50, 
+				config: true,
+				range: { min: 10, max: 200, step: 10 }
+			},
+			{ 
+				key: 'voiceVolume', 
+				type: Number, 
+				default: 0.05, 
+				config: true,
+				range: { min: 0, max: 1, step: 0.05 }
+			}
+		];
+
+		settings.forEach(setting => {
+			game.settings.register('lancer-communicator', setting.key, {
+				name: game.i18n.localize(`LANCER.Settings.${setting.key}`),
+				scope: 'world',
+				config: setting.config || false,
+				type: setting.type,
+				default: setting.default,
+				range: setting.range
+			});
+		});
+	}
 	
 	static handleSocketMessage(payload) {
 		console.log("Получено сообщение:", payload);
