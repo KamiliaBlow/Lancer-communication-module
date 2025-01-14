@@ -309,7 +309,7 @@
     }
 }
 
-#lancer-communicator-message.style-damaged .communicator-container {
+#lancer-communicator-message.style-damaged .lcm-communicator-container {
     animation: shake-border 0.7s infinite;
     border: 2px solid darkred;
     box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);

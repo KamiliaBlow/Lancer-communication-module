@@ -2,7 +2,7 @@
     "name": "lancer-communicator",
     "title": "Lancer Communicator",
     "description": "NPC Communicator for Lancer RPG | Коммуникатор NPC для Lancer RPG",
-    "version": "0.4.1",
+    "version": "0.4.1.1",
 	"languages": [
         {
             "lang": "en",
@@ -36,5 +36,5 @@
     ],
 	"url": "https://github.com/KamiliaBlow/Lancer-communication-module",
     "manifest": "https://raw.githubusercontent.com/KamiliaBlow/Lancer-communication-module/main/lancer-communicator/module.json",
-    "download": "https://github.com/KamiliaBlow/Lancer-communication-module/archive/refs/tags/v0.4.1.zip"
+    "download": "https://github.com/KamiliaBlow/Lancer-communication-module/archive/refs/tags/v0.4.1.1.zip"
 }
