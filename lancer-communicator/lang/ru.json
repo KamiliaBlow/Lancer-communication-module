@@ -1,6 +1,7 @@
 {
 	"LANCER.Settings": {
-		"CreateMacro": "Создать макрос",
+		"CreateMacro": "Макрос с текстом",
+		"CreateQuickMacro": "Макрос персонажа",
 		"Communicator": "Коммуникатор",
 		"CommunicatorSettings": "Настройки коммуникатора",
 		"CharacterName": "Имя персонажа",
@@ -25,6 +26,7 @@
 		"Cancel": "Отмена",
 		"typingSpeed": "Скорость печати",
 		"voiceVolume": "Громкость голоса",
+		"FontSize": "Размер шрифта",
 		"Warnings": {
 			"NoCharacterName": "Пожалуйста, введите имя персонажа!",
 			"NoPortrait": "Пожалуйста, выберите портрет!",

@@ -1,170 +1,189 @@
 class LancerCommunicator {
-    static sendCommunicatorMessage(characterName, portraitPath, message, soundPath, style = 'green') {
+    static sendCommunicatorMessage(characterName, portraitPath, message, soundPath, style = 'green', fontSize = null) {
+        const actualFontSize = fontSize ?? game.settings.get('lancer-communicator', 'messageFontSize');
+        
         const messageData = {
-            characterName: characterName,
+            characterName,
             portrait: portraitPath,
             text: message,
             sound: soundPath || null,
             timestamp: Date.now(),
             senderId: game.user.id,
-			style: style // Добавляем стиль
+            style,
+            fontSize: actualFontSize
         };
 
-        // Отправка с типом сообщения
         game.socket.emit('module.lancer-communicator', {
             type: 'showMessage',
             data: messageData
         });
 
-        // Локальный показ
         this.showCommunicatorMessage(messageData);
     }
 
-		static initSocketListeners() {
-		if (!game.socket) {
-			console.error("Socket не доступен при инициализации!");
-			return;
-		}
+    static initSocketListeners() {
+        if (!game.socket) {
+            console.error("Socket не доступен при инициализации!");
+            return;
+        }
 
-		// Использование стрелочной функции для корректного связывания контекста
-		game.socket.on('module.lancer-communicator', (payload) => {
-			if (payload?.type === 'showMessage') {
-				this.showCommunicatorMessage(payload.data);
-			}
-		});
-	}
+        game.socket.on('module.lancer-communicator', (payload) => {
+            if (payload?.type === 'showMessage') {
+                this.showCommunicatorMessage(payload.data);
+            }
+        });
+    }
 
     static showCommunicatorMessage(messageData) {
-		// Кэширование селекторов и элементов
-		const $body = $('body');
-		const existingMessage = $('#lancer-communicator-message');
+        const fontSize = messageData.fontSize || game.settings.get('lancer-communicator', 'messageFontSize');
+        
+        document.documentElement.style.setProperty('--message-font-size', `${fontSize}px`);
+        
+        const $body = $('body');
+        const existingMessage = $('#lancer-communicator-message');
 
-		// Оптимизированное удаление предыдущего сообщения
-		if (existingMessage.length) {
-			const communicatorData = existingMessage.data('communicatorData');
-			communicatorData.isCancelled = true;
+        if (existingMessage.length) {
+            const communicatorData = existingMessage.data('communicatorData');
+            communicatorData.isCancelled = true;
 
-			const typingSound = existingMessage.data('typingSound');
-			if (typingSound) {
-				typingSound.pause();
-				typingSound.currentTime = 0;
-			}
+            const typingSound = existingMessage.data('typingSound');
+            if (typingSound) {
+                typingSound.pause();
+                typingSound.currentTime = 0;
+            }
 
-			existingMessage.remove();
-		}
+            existingMessage.remove();
+        }
 
-		// Использование шаблонной функции для создания сообщения
-		const createMessageElement = () => `
-			<div id="lancer-communicator-message" class="top-screen style-${messageData.style || 'green'}">
-				<div class="communicator-container">
-					<div class="portrait-container">
-						<img src="${messageData.portrait}" class="portrait">
-						<div class="character-name">${messageData.characterName}</div>
-					</div>
-					<div class="message-text"></div>
-				</div>
-			</div>
-		`;
+        const createMessageElement = () => `
+            <div id="lancer-communicator-message" 
+                 class="top-screen lcm-style-${messageData.style || 'green'}" 
+                 style="--message-font-size: ${fontSize}px;">
+                <div class="lcm-communicator-container">
+                    <div class="lcm-portrait-container">
+                        <img src="${messageData.portrait}" class="lcm-portrait">
+                        <div class="lcm-character-name">${messageData.characterName}</div>
+                    </div>
+                    <div class="lcm-message-text" style="font-size: ${fontSize}px;">${messageData.text}</div>
+                </div>
+            </div>
+        `;
 
-		const messageBox = $(createMessageElement()).appendTo($body);
-		const $messageText = messageBox.find('.message-text');
+        const messageBox = $(createMessageElement()).appendTo($body);
+        const $messageText = messageBox.find('.lcm-message-text');
+		
+		messageBox.addClass(`style-${messageData.style}`);
+        
+        $messageText.css({
+            'font-size': `${fontSize}px`,
+            '--message-font-size': `${fontSize}px`
+        });
+        $messageText[0].style.setProperty('font-size', `${fontSize}px`, 'important');
 
-		// Оптимизация звука
-		const typingSound = messageData.sound 
-			? new Audio(messageData.sound) 
-			: null;
+        const typingSound = messageData.sound ? new Audio(messageData.sound) : null;
+        const typingSpeed = game.settings.get('lancer-communicator', 'typingSpeed');
+        const voiceVolume = game.settings.get('lancer-communicator', 'voiceVolume');
 
-		const typingSpeed = game.settings.get('lancer-communicator', 'typingSpeed');
-		const voiceVolume = game.settings.get('lancer-communicator', 'voiceVolume');
+        const communicatorData = { isCancelled: false };
+        messageBox.data('communicatorData', communicatorData);
+        messageBox.data('typingSound', typingSound);
 
-		const communicatorData = { isCancelled: false };
-		messageBox.data('communicatorData', communicatorData);
-		messageBox.data('typingSound', typingSound);
+        const typing = () => {
+            if (communicatorData.isCancelled) return;
 
-		// Оптимизированная функция печати
-		const typing = () => {
-			if (communicatorData.isCancelled) return;
+            const currentText = messageData.text.slice(0, index + 1).toUpperCase();
+            $messageText.text(currentText);
 
-			const currentText = messageData.text.slice(0, index + 1).toUpperCase();
-			$messageText.text(currentText);
+            if (typingSound && messageData.text[index] !== ' ') {
+                const voiceClone = typingSound.cloneNode();
+                voiceClone.playbackRate = 0.9 + Math.random() * 0.2;
+                voiceClone.volume = Math.max(0, Math.min(1, voiceVolume * (0.9 + Math.random() * 0.2)));
+                voiceClone.currentTime = 0;
+                voiceClone.play().catch(console.error);
+            }
 
-			if (typingSound && messageData.text[index] !== ' ') {
-				const voiceClone = typingSound.cloneNode();
-				voiceClone.playbackRate = 0.9 + Math.random() * 0.2;
-				voiceClone.volume = Math.max(0, Math.min(1, voiceVolume * (0.9 + Math.random() * 0.2)));
-				voiceClone.currentTime = 0;
-				voiceClone.play().catch(console.error);
-			}
+            index++;
+            if (index < messageData.text.length) {
+                setTimeout(typing, Math.random() * 40 + 30);
+            } else {
+                setTimeout(() => {
+                    if (!communicatorData.isCancelled) {
+                        messageBox.addClass('collapsing');
+                        if (typingSound) {
+                            typingSound.pause();
+                            typingSound.currentTime = 0;
+                        }
+                        setTimeout(() => messageBox.remove(), 500);
+                    }
+                }, 10000);
+            }
+        };
 
-			index++;
-			if (index < messageData.text.length) {
-				setTimeout(typing, Math.random() * 40 + 30);
-			} else {
-				// Логика завершения
-				setTimeout(() => {
-					if (!communicatorData.isCancelled) {
-						messageBox.addClass('collapsing');
-						if (typingSound) {
-							typingSound.pause();
-							typingSound.currentTime = 0;
-						}
-						setTimeout(() => messageBox.remove(), 500);
-					}
-				}, 10000);
-			}
-		};
+        messageBox.on('click', () => {
+            communicatorData.isCancelled = true;
+            if (typingSound) {
+                typingSound.pause();
+                typingSound.currentTime = 0;
+            }
+            $messageText.text(messageData.text.toUpperCase());
+            messageBox.addClass('collapsing');
+            setTimeout(() => messageBox.remove(), 500);
+        });
 
-		// Клик для прерывания
-		messageBox.on('click', () => {
-			communicatorData.isCancelled = true;
-			if (typingSound) {
-				typingSound.pause();
-				typingSound.currentTime = 0;
-			}
-			$messageText.text(messageData.text.toUpperCase());
-			messageBox.addClass('collapsing');
-			setTimeout(() => messageBox.remove(), 500);
-		});
+        let index = 0;
+        typing();
 
-		// Запуск печати
-		let index = 0;
-		typing();
-	}
+        return messageBox[0];
+    }
 
     static init() {
-	
-		this.registerSettings();
+        this.registerSettings();
 
-        // Регистрация инструмента
-		Hooks.on('renderSceneControls', (controls, html) => {
-			// Проверяем, является ли текущий пользователь ГМ
-			if (!game.user.isGM) return;
+        Hooks.on('renderSceneControls', (controls, html) => {
+            if (!game.user.isGM) return;
 
-			const tokenToolPanel = html.find('#tools-panel-token');
-			
-			if (tokenToolPanel.length) {
-				if (!tokenToolPanel.find('.lancer-communicator').length) {
-					const communicatorButton = $(`
-						<li class="scene-tool lancer-communicator" data-tool="communicator" title="${game.i18n.localize("LANCER.Settings.Communicator")}">
-							<i class="fas fa-satellite-dish"></i>
-						</li>
-					`);
+            const tokenToolPanel = html.find('#tools-panel-token');
+            
+            if (tokenToolPanel.length && !tokenToolPanel.find('.lancer-communicator').length) {
+                const communicatorButton = $(`
+                    <li class="scene-tool lancer-communicator" data-tool="communicator" title="${game.i18n.localize("LANCER.Settings.Communicator")}">
+                        <i class="fas fa-satellite-dish"></i>
+                    </li>
+                `);
 
-					communicatorButton.on('click', (event) => {
-						event.preventDefault();
-						this.openCommunicatorSettings();
-					});
+                communicatorButton.on('click', (event) => {
+                    event.preventDefault();
+                    this.openCommunicatorSettings();
+                });
 
-					tokenToolPanel.append(communicatorButton);
-				}
-			}
-		});
-		
-		// Регистрация обработчика сообщений
-		this.initSocketListeners();
+                tokenToolPanel.append(communicatorButton);
+            }
+        });
+        
+        this.initSocketListeners();
     }
 	
 	static registerSettings() {
+		// Проверка существования настройки перед регистрацией
+		if (!game.settings.get('lancer-communicator', 'messageFontSize', { tryEnsure: true })) {
+			game.settings.register('lancer-communicator', 'messageFontSize', {
+				name: game.i18n.localize('LANCER.Settings.FontSize'),
+				scope: 'world',
+				config: true,
+				type: Number,
+				default: 14,
+				range: {
+					min: 10,
+					max: 32,
+					step: 1
+				},
+				onChange: (value) => {
+					console.log('Font size changed to:', value);
+					document.documentElement.style.setProperty('--message-font-size', `${value}px`);
+				}
+			});
+		}
+		
 		const settings = [
 			{ key: 'currentPortrait', type: String, default: '' },
 			{ key: 'currentMessage', type: String, default: '' },
@@ -172,6 +191,7 @@ class LancerCommunicator {
 			{ key: 'lastPortrait', type: String, default: '' },
 			{ key: 'lastSound', type: String, default: '' },
 			{ key: 'lastCharacterName', type: String, default: '' },
+			{ key: 'lastMessageStyle', type: String, default: 'green', config: false },
 			{ 
 				key: 'typingSpeed', 
 				type: Number, 
@@ -189,14 +209,17 @@ class LancerCommunicator {
 		];
 
 		settings.forEach(setting => {
-			game.settings.register('lancer-communicator', setting.key, {
-				name: game.i18n.localize(`LANCER.Settings.${setting.key}`),
-				scope: 'world',
-				config: setting.config || false,
-				type: setting.type,
-				default: setting.default,
-				range: setting.range
-			});
+			// Пропускаем уже зарегистрированную настройку messageFontSize
+			if (setting.key !== 'messageFontSize') {
+				game.settings.register('lancer-communicator', setting.key, {
+					name: game.i18n.localize(`LANCER.Settings.${setting.key}`),
+					scope: 'world',
+					config: setting.config || false,
+					type: setting.type,
+					default: setting.default,
+					range: setting.range
+				});
+			}
 		});
 	}
 	
@@ -207,12 +230,17 @@ class LancerCommunicator {
 		if (payload && payload.type === 'showMessage') {
 			const messageData = payload.data;
 			
+			// Принудительно устанавливаем размер шрифта из настроек, если не передан
+			if (!messageData.fontSize) {
+				messageData.fontSize = game.settings.get('lancer-communicator', 'messageFontSize');
+			}
+			
 			// Убираем проверку senderId, чтобы сообщение показывалось у всех
 			this.showCommunicatorMessage(messageData);
 		}
 	}
 	
-	static createCommunicatorMacro(characterName, portraitPath, message, soundPath, style) {
+	static createCommunicatorMacro(characterName, portraitPath, message, soundPath, style, fontSize) {
 		// Экранируем специальные символы в тексте сообщения
 		const escapedCharacterName = characterName.replace(/"/g, '\\"');
 		const escapedPortraitPath = portraitPath.replace(/"/g, '\\"');
@@ -221,7 +249,7 @@ class LancerCommunicator {
 		const escapedSoundPath = (soundPath || '').replace(/"/g, '\\"');
 		const escapedStyle = style.replace(/"/g, '\\"');
 
-		const macroName = `Communicator: ${escapedCharacterName}`;
+		const macroName = `With text: ${escapedCharacterName}`;
 		
 		Macro.create({
 			name: macroName,
@@ -234,16 +262,59 @@ class LancerCommunicator {
 						"${escapedPortraitPath}", 
 						\`${escapedMessage}\`, 
 						"${escapedSoundPath}",
-						"${escapedStyle}"
+						"${escapedStyle}",
+						${fontSize}
 					);
 				} else {
 					ui.notifications.warn("Lancer Communicator module is not active");
 				}
 			`
 		}).then(macro => {
-			ui.notifications.info(`Macro "${macroName}" created successfully`);
+			ui.notifications.info(`With text "${macroName}" created successfully`);
 		}).catch(error => {
 			ui.notifications.error(`Error creating macro: ${error}`);
+		});
+	}
+	
+	static createQuickCommunicatorMacro(characterName, portraitPath, soundPath, style, fontSize) {
+		const escapedCharacterName = characterName.replace(/"/g, '\\"');
+		const escapedPortraitPath = portraitPath.replace(/"/g, '\\"');
+		const escapedSoundPath = (soundPath || '').replace(/"/g, '\\"');
+		const escapedStyle = style.replace(/"/g, '\\"');
+
+		const macroName = `Character: ${escapedCharacterName}`;
+		
+		Macro.create({
+			name: macroName,
+			type: 'script',
+			scope: 'global',
+			command: `
+				if (game.modules.get('lancer-communicator')?.active) {
+					const messageText = await Dialog.prompt({
+						title: "Character - ${escapedCharacterName}",
+						content: '<textarea style="width:100%; min-height:150px;"></textarea>',
+						label: "Send Message",
+						callback: (html) => html.find('textarea').val()
+					});
+
+					if (messageText) {
+						game.modules.get('lancer-communicator').api.sendCommunicatorMessage(
+							"${escapedCharacterName}", 
+							"${escapedPortraitPath}", 
+							messageText, 
+							"${escapedSoundPath}",
+							"${escapedStyle}",
+							${fontSize}
+						);
+					}
+				} else {
+					ui.notifications.warn("Lancer Communicator module is not active");
+				}
+			`
+		}).then(macro => {
+			ui.notifications.info(`Char Macro "${macroName}" created successfully`);
+		}).catch(error => {
+			ui.notifications.error(`Error creating quick macro: ${error}`);
 		});
 	}
 	
@@ -251,35 +322,51 @@ class LancerCommunicator {
 		const lastPortrait = game.settings.get('lancer-communicator', 'lastPortrait');
 		const lastSound = game.settings.get('lancer-communicator', 'lastSound');
 		const lastCharacterName = game.settings.get('lancer-communicator', 'lastCharacterName');
+		const lastStyle = game.settings.get('lancer-communicator', 'lastMessageStyle');
+		const fontSize = game.settings.get('lancer-communicator', 'messageFontSize');
 		
         new Dialog({
             title: game.i18n.localize("LANCER.Settings.CommunicatorSettings"),
 			content: `
 				<form class="lancer-communicator-dialog">
-					<div class="form-group">
+					<div class="lcm-form-group">
 						<label>${game.i18n.localize("LANCER.Settings.CharacterName")}</label>
 						<input type="text" id="character-name" value="${lastCharacterName}" placeholder="${game.i18n.localize("LANCER.Settings.CharacterName")}">
 					</div>
-					<div class="form-group">
+					<div class="lcm-form-group">
 						<label>${game.i18n.localize("LANCER.Settings.Portrait")}</label>
-						<div class="input-group">
+						<div class="lcm-input-group">
 							<input type="text" id="portrait-path" readonly placeholder="${game.i18n.localize("LANCER.Settings.SelectPortrait")}">
 							<button type="button" id="select-portrait">${game.i18n.localize("LANCER.Settings.SelectPortrait")}</button>
 						</div>
 					</div>
-					<div class="form-group">
+					<div class="lcm-form-group">
 						<label>${game.i18n.localize("LANCER.Settings.MessageText")}</label>
 						<textarea id="message-input" rows="4" placeholder="${game.i18n.localize("LANCER.Settings.MessageText")}"></textarea>
 					</div>
-					<div class="form-group">
+					<div class="lcm-form-group">
 						<label>${game.i18n.localize("LANCER.Settings.SoundSelect")}</label>
-						<div class="input-group">
+						<div class="lcm-input-group">
 							<input type="text" id="sound-path" value="${lastSound}" readonly placeholder="${game.i18n.localize("LANCER.Settings.SelectSound")}">
 							<button type="button" id="select-sound">${game.i18n.localize("LANCER.Settings.SelectSound")}</button>
 							<button type="button" id="clear-sound">${game.i18n.localize("LANCER.Settings.ClearSound")}</button>
 						</div>
 					</div>
-					<div class="form-group">
+					<div class="lcm-form-group">
+						<label>${game.i18n.localize("LANCER.Settings.FontSize")}</label>
+						<div class="lcm-input-group">
+							<input 
+								type="range" 
+								id="font-size-input" 
+								min="10" 
+								max="32" 
+								step="1" 
+								value="${fontSize}"
+							>
+							<span id="font-size-display">${fontSize}px</span>
+						</div>
+					</div>
+					<div class="lcm-form-group">
 						<label>${game.i18n.localize("LANCER.Settings.MessageStyle")}</label>
 						<select id="message-style">
 							<option value="green">${game.i18n.localize("LANCER.Settings.MSGStyleGr")}</option>
@@ -301,6 +388,7 @@ class LancerCommunicator {
 						const message = document.getElementById('message-input').value;
 						const soundPath = document.getElementById('sound-path').value;
 						const style = document.getElementById('message-style').value;
+						const fontSize = document.getElementById('font-size-input').value; // Получаем размер шрифта
 
 						// Валидация
 						if (!characterName.trim()) {
@@ -323,7 +411,7 @@ class LancerCommunicator {
 						game.settings.set('lancer-communicator', 'lastSound', soundPath);
 						game.settings.set('lancer-communicator', 'lastCharacterName', characterName);
 
-						this.sendCommunicatorMessage(characterName, portraitPath, message, soundPath, style);
+						this.sendCommunicatorMessage(characterName, portraitPath, message, soundPath, style, Number(fontSize));
                     }
                 },
 				macro: {
@@ -334,6 +422,7 @@ class LancerCommunicator {
 						const message = document.getElementById('message-input').value;
 						const soundPath = document.getElementById('sound-path').value;
 						const style = document.getElementById('message-style').value;
+						const fontSize = document.getElementById('font-size-input').value;
 
 						// Валидация (как в методе send)
 						if (!characterName.trim()) {
@@ -352,7 +441,37 @@ class LancerCommunicator {
 						}
 
 						// Создаем макрос
-						this.createCommunicatorMacro(characterName, portraitPath, message, soundPath, style);
+						this.createCommunicatorMacro(characterName, portraitPath, message, soundPath, style, Number(fontSize));
+					}
+				},
+				quickMacro: {
+					label: game.i18n.localize("LANCER.Settings.CreateQuickMacro"),
+					callback: () => {
+						const characterName = document.getElementById('character-name').value;
+						const portraitPath = document.getElementById('portrait-path').value;
+						const soundPath = document.getElementById('sound-path').value;
+						const style = document.getElementById('message-style').value;
+						const fontSize = document.getElementById('font-size-input').value;
+
+						// Валидация
+						if (!characterName.trim()) {
+							ui.notifications.warn(game.i18n.localize("LANCER.Settings.Warnings.NoCharacterName"));
+							return false;
+						}
+
+						if (!portraitPath) {
+							ui.notifications.warn(game.i18n.localize("LANCER.Settings.Warnings.NoPortrait"));
+							return false;
+						}
+
+						// Создаем квик-макрос
+						this.createQuickCommunicatorMacro(
+							characterName, 
+							portraitPath, 
+							soundPath, 
+							style, 
+							Number(fontSize)
+						);
 					}
 				},
                 cancel: {
@@ -361,6 +480,8 @@ class LancerCommunicator {
             },
             render: (html) => {
                 // Обработчик выбора портрета
+				const fontSizeInput = html.find('#font-size-input');
+				const fontSizeDisplay = html.find('#font-size-display');
 				const styleSelect = html.find('#message-style');
 				const preview = html.find('#style-preview');
 				const lastPortrait = game.user.getFlag('lancer-communicator', 'lastPortrait');
@@ -411,6 +532,33 @@ class LancerCommunicator {
 					'border': '1px solid',
 					'display': 'flex',
 					'align-items': 'center'
+				});
+				
+				// Устанавливаем последний использованный стиль
+				styleSelect.val(lastStyle);
+
+				// Сохранение стиля при изменении
+				styleSelect.on('change', () => {
+					const selectedStyle = styleSelect.val();
+					game.settings.set('lancer-communicator', 'lastMessageStyle', selectedStyle);
+				});
+				
+				// Получаем текущий размер шрифта из настроек
+				const currentFontSize = game.settings.get('lancer-communicator', 'messageFontSize');
+				
+				// Устанавливаем значение инпута
+				fontSizeInput.val(currentFontSize);
+				fontSizeDisplay.text(`${currentFontSize}px`);
+
+				fontSizeInput.on('input', () => {
+					const size = Number(fontSizeInput.val());
+					console.log('Selected font size:', size);
+					
+					// Обновляем глобальную CSS-переменную
+					document.documentElement.style.setProperty('--message-font-size', `${size}px`);
+					
+					// Принудительное обновление отображения
+					fontSizeDisplay.text(`${size}px`);
 				});
 				
 				function updatePreview() {
@@ -486,19 +634,59 @@ class LancerCommunicator {
 				
 				styleSelect.on('change', updatePreview);
 				updatePreview(); // Первичная инициализация
-            }
+            },
+			close: (html) => {
+				const fontSize = Number(html.find('#font-size-input').val());
+    
+				console.log('Saving font size:', fontSize);
+				
+				// Сохраняем размер шрифта с принудительным приведением к числу
+				game.settings.set('lancer-communicator', 'messageFontSize', fontSize);
+				
+				// Обновляем глобальную CSS-переменную
+				document.documentElement.style.setProperty('--message-font-size', `${fontSize}px`);
+			}
         }).render(true);
     }
 }
 
 // Инициализация
 Hooks.once('init', () => {
+    game.settings.register('lancer-communicator', 'messageFontSize', {
+        name: game.i18n.localize('LANCER.Settings.FontSize'),
+        scope: 'world',
+        config: true,
+        type: Number,
+        default: 14,
+        range: {
+            min: 10,
+            max: 32,
+            step: 1
+        }
+    });
+
+    // Используем статический метод напрямую
     game.modules.get('lancer-communicator').api = {
-        sendCommunicatorMessage: LancerCommunicator.sendCommunicatorMessage.bind(LancerCommunicator)
+        sendCommunicatorMessage: (characterName, portraitPath, message, soundPath, style, fontSize) => 
+            LancerCommunicator.sendCommunicatorMessage(
+                characterName, 
+                portraitPath, 
+                message, 
+                soundPath, 
+                style, 
+                fontSize
+            )
     };
 });
 
 Hooks.once('ready', () => {
-    console.log("Инициализация LancerCommunicator");
+    try {
+        const fontSize = game.settings.get('lancer-communicator', 'messageFontSize');
+        document.documentElement.style.setProperty('--message-font-size', `${fontSize}px`);
+    } catch (error) {
+        console.error("Ошибка получения размера шрифта:", error);
+        document.documentElement.style.setProperty('--message-font-size', '14px');
+    }
+    
     LancerCommunicator.init();
 });

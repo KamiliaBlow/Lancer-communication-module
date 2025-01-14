@@ -3,7 +3,11 @@
     src: url('fonts/MOSCOW2024.otf') format('opentype');
 }
 
-.lancer-communicator-dialog .form-group {
+:root {
+    --message-font-size: 14px;
+}
+
+.lancer-communicator-dialog .lcm-form-group {
     margin-bottom: 10px;
     display: flex;
     flex-direction: column;
@@ -19,15 +23,18 @@
     width: 100%;
     padding: 5px;
     border-radius: 4px;
+	max-height: 200px;
+    resize: vertical; /* Разрешаем только вертикальное растягивание */
+    overflow-y: auto;
 }
 
-.lancer-communicator-dialog .input-group {
+.lancer-communicator-dialog .lcm-input-group {
     display: flex;
     align-items: center;
 	gap: 5px; 
 }
 
-.lancer-communicator-dialog .input-group button {
+.lancer-communicator-dialog .lcm-input-group button {
     height: 26px; /* Точно такая же высота как у инпута */
     padding: 0 10px;
     color: black;
@@ -39,9 +46,24 @@
     justify-content: center;
 }
 
-.lancer-communicator-dialog .input-group input {
+.lancer-communicator-dialog .lcm-input-group input {
     flex-grow: 1;
 	height: 26px;
+}
+
+.lancer-communicator-dialog .lcm-input-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.lancer-communicator-dialog input[type="range"] {
+    flex-grow: 1;
+}
+
+.lancer-communicator-dialog #font-size-display {
+    width: 50px;
+    text-align: right;
 }
 
 #lancer-communicator-message.top-screen {
@@ -54,7 +76,7 @@
     z-index: 1000;
 }
 
-#lancer-communicator-message .communicator-container {
+#lancer-communicator-message .lcm-communicator-container {
     width: 100%; /* Изменил на 100% */ 
     margin: 0 auto;
     background-color: rgba(0, 0, 0, 0.8);
@@ -66,7 +88,7 @@
 	position: relative; /* Для абсолютного позиционирования курсора */
 }
 
-#lancer-communicator-message .portrait-container {
+#lancer-communicator-message .lcm-portrait-container {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -75,7 +97,7 @@
     flex-shrink: 0; /* Запрещаем уменьшение контейнера */
 }
 
-#lancer-communicator-message .portrait {
+#lancer-communicator-message .lcm-portrait {
     width: 80px;
     height: 80px;
     object-fit: cover;
@@ -83,16 +105,16 @@
     flex-shrink: 0; /* Запрещаем уменьшение аватарки */
 }
 
-#lancer-communicator-message .message-text {
+#lancer-communicator-message .lcm-message-text {
 	font-family: 'MOSCOW2024', monospace;
-    font-size: 14px;
+	font-size: var(--message-font-size, 14px) !important; 
     flex-grow: 1;
     word-wrap: break-word;
     text-align: left; /* Выравнивание текста по левому краю */
 	text-transform: uppercase; /* Все буквы заглавные */
 }
 
-#lancer-communicator-message .message-text::after {
+#lancer-communicator-message .lcm-message-text::after {
     content: '|';
     display: inline-block;
     animation: blink 0.7s infinite;
@@ -105,7 +127,7 @@
     50% { opacity: 1; }
 }
 
-#lancer-communicator-message, .portrait {
+#lancer-communicator-message, .lcm-portrait {
     border: 1px solid #03FB8D;
     box-shadow: 0 0 15px rgba(3, 251, 141, 0.8);
     backdrop-filter: blur(5px);
@@ -131,7 +153,7 @@
     transform-origin: center;
 }
 
-#lancer-communicator-message .character-name {
+#lancer-communicator-message .lcm-character-name {
     font-family: 'MOSCOW2024', monospace;
     color: #03FB8D;
     text-align: center;
@@ -159,17 +181,17 @@
     border-color: blue;
     color: #00A4FF;
 }
-#lancer-communicator-message.style-blue .message-text {
+#lancer-communicator-message.style-blue .lcm-message-text {
     color: #00A4FF;
 }
-#lancer-communicator-message.style-blue .character-name {
+#lancer-communicator-message.style-blue .lcm-character-name {
     color: #00A4FF;
 }
-#lancer-communicator-message.style-blue .portrait {
+#lancer-communicator-message.style-blue .lcm-portrait {
     border-color: #00A4FF;
     box-shadow: 0 0 10px rgba(0, 164, 255, 0.5);
 }
-#lancer-communicator-message.style-blue .message-text::after {
+#lancer-communicator-message.style-blue .lcm-message-text::after {
     color: #00A4FF;
 }
 
@@ -181,17 +203,17 @@
     border-color: yellow;
     color: #FFD700;
 }
-#lancer-communicator-message.style-yellow .message-text {
+#lancer-communicator-message.style-yellow .lcm-message-text {
     color: #FFD700;
 }
-#lancer-communicator-message.style-yellow .character-name {
+#lancer-communicator-message.style-yellow .lcm-character-name {
     color: #FFD700;
 }
-#lancer-communicator-message.style-yellow .portrait {
+#lancer-communicator-message.style-yellow .lcm-portrait {
     border-color: #FFD700;
     box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
 }
-#lancer-communicator-message.style-yellow .message-text::after {
+#lancer-communicator-message.style-yellow .lcm-message-text::after {
     color: #FFD700;
 }
 
@@ -203,17 +225,17 @@
     border-color: red;
     color: #FF0000;
 }
-#lancer-communicator-message.style-red .message-text {
+#lancer-communicator-message.style-red .lcm-message-text {
     color: #FF0000;
 }
-#lancer-communicator-message.style-red .character-name {
+#lancer-communicator-message.style-red .lcm-character-name {
     color: #FF0000;
 }
-#lancer-communicator-message.style-red .portrait {
+#lancer-communicator-message.style-red .lcm-portrait {
     border-color: #FF0000;
     box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
 }
-#lancer-communicator-message.style-red .message-text::after {
+#lancer-communicator-message.style-red .lcm-message-text::after {
     color: #FF0000;
 }
 
@@ -226,20 +248,20 @@
     border-color: maroon;
     animation: glitch-damage 0.3s infinite;
 }
-#lancer-communicator-message.style-damaged .message-text {
+#lancer-communicator-message.style-damaged .lcm-message-text {
     color: darkred;
     text-shadow: 2px 2px 4px rgba(255, 0, 0, 0.5);
 }
-#lancer-communicator-message.style-damaged .character-name {
+#lancer-communicator-message.style-damaged .lcm-character-name {
     color: darkred;
     text-shadow: 1px 1px 2px rgba(255, 0, 0, 0.5);
 }
-#lancer-communicator-message.style-damaged .portrait {
+#lancer-communicator-message.style-damaged .lcm-portrait {
     border-color: darkred;
     box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
     transform: skew(-5deg);
 }
-#lancer-communicator-message.style-damaged .message-text::after {
+#lancer-communicator-message.style-damaged .lcm-message-text::after {
     color: darkred;
 }
 
@@ -253,7 +275,7 @@
     60% { transform: translate(0, -1px) rotate(-0.2deg); }
 }
 
-@keyframes portrait-shake {
+@keyframes lcm-portrait-shake {
     0%, 100% { 
         transform: translate(0, 0) rotate(0deg) scale(1);
     }
@@ -293,18 +315,18 @@
     box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
 }
 
-#lancer-communicator-message.style-damaged .message-text {
+#lancer-communicator-message.style-damaged .lcm-message-text {
     position: relative;
     animation: text-glitch 0.6s infinite;
     color: #FF4444;
 }
 
-#lancer-communicator-message.style-damaged .character-name {
+#lancer-communicator-message.style-damaged .lcm-character-name {
     animation: text-glitch 0.6s infinite alternate;
     color: #FF2222;
 }
 
-#lancer-communicator-message.style-damaged .portrait {
+#lancer-communicator-message.style-damaged .lcm-portrait {
     animation: portrait-shake 0.15s infinite;
     filter: 
         contrast(120%) 
@@ -316,6 +338,6 @@
     transition: all 0.1s ease;
 }
 
-#lancer-communicator-message.style-damaged .portrait:hover {
+#lancer-communicator-message.style-damaged .lcm-portrait:hover {
     animation-play-state: paused;
 }
