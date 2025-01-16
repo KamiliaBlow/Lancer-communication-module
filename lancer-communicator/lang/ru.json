@@ -27,6 +27,7 @@
 		"typingSpeed": "Скорость печати",
 		"voiceVolume": "Громкость голоса",
 		"FontSize": "Размер шрифта",
+		"FontSelect": "Выбор шрифта",
 		"Warnings": {
 			"NoCharacterName": "Пожалуйста, введите имя персонажа!",
 			"NoPortrait": "Пожалуйста, выберите портрет!",
