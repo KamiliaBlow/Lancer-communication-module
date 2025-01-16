@@ -3,8 +3,19 @@
     src: url('fonts/MOSCOW2024.otf') format('opentype');
 }
 
+@font-face {
+    font-family: 'Undertale';
+    src: url('fonts/Undertale.otf') format('opentype');
+}
+
+@font-face {
+    font-family: 'TeletactileRus';
+    src: url('fonts/TeletactileRus.ttf') format('opentype');
+}
+
 :root {
-    --message-font-size: 14px;
+	--message-font-size: 14px;
+	--message-font: 'MOSCOW2024';
 }
 
 .lancer-communicator-dialog .lcm-form-group {
@@ -106,12 +117,16 @@
 }
 
 #lancer-communicator-message .lcm-message-text {
-	font-family: 'MOSCOW2024', monospace;
 	font-size: var(--message-font-size, 14px) !important; 
     flex-grow: 1;
     word-wrap: break-word;
     text-align: left; /* Выравнивание текста по левому краю */
 	text-transform: uppercase; /* Все буквы заглавные */
+}
+
+#lancer-communicator-message .lcm-message-text,
+#lancer-communicator-message .lcm-character-name {
+    font-family: var(--message-font, 'MOSCOW2024'), monospace;
 }
 
 #lancer-communicator-message .lcm-message-text::after {
@@ -327,7 +342,7 @@
 }
 
 #lancer-communicator-message.style-damaged .lcm-portrait {
-    animation: portrait-shake 0.15s infinite;
+    animation: lcm-portrait-shake 0.30s infinite;
     filter: 
         contrast(120%) 
         brightness(110%);

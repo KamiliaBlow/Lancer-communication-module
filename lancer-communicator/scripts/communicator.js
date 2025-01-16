@@ -184,6 +184,19 @@ class LancerCommunicator {
 			});
 		}
 		
+		game.settings.register('lancer-communicator', 'communicatorFont', {
+			name: game.i18n.localize("LANCER.Settings.FontSelect"),
+			scope: 'world',
+			config: true,
+			type: String, 
+			default: 'MOSCOW2024', 
+			choices: {
+				'MOSCOW2024': 'MOSCOW2024',
+				'Undertale': 'Undertale',
+				'TeletactileRus': 'TeletactileRus'
+			}
+		});
+		
 		const settings = [
 			{ key: 'currentPortrait', type: String, default: '' },
 			{ key: 'currentMessage', type: String, default: '' },
@@ -210,7 +223,7 @@ class LancerCommunicator {
 
 		settings.forEach(setting => {
 			// Пропускаем уже зарегистрированную настройку messageFontSize
-			if (setting.key !== 'messageFontSize') {
+			if (setting.key !== 'messageFontSize' && setting.key !== 'communicatorFont') {
 				game.settings.register('lancer-communicator', setting.key, {
 					name: game.i18n.localize(`LANCER.Settings.${setting.key}`),
 					scope: 'world',
@@ -488,6 +501,8 @@ class LancerCommunicator {
 				if (lastPortrait) {
 					html.find('#portrait-path').val(lastPortrait);
 				}
+				
+				const currentFont = game.settings.get('lancer-communicator', 'communicatorFont');
 					
                 html.find('#select-portrait').on('click', () => {
 					const fp = new FilePicker({
@@ -524,6 +539,16 @@ class LancerCommunicator {
 				// Обработчик очистки звука
 				html.find('#clear-sound').on('click', () => {
 					html.find('#sound-path').val('');
+				});
+				
+				html.find('#message-font').val(currentFont);
+
+				html.find('#message-font').on('change', () => {
+					const selectedFont = html.find('#message-font').val();
+					game.settings.set('lancer-communicator', 'communicatorFont', selectedFont);
+					
+					// Обновляем CSS-переменную шрифта
+					document.documentElement.style.setProperty('--message-font', selectedFont);
 				});
 				
 				preview.css({
@@ -652,6 +677,19 @@ class LancerCommunicator {
 
 // Инициализация
 Hooks.once('init', () => {
+	game.settings.register('lancer-communicator', 'communicatorFont', {
+        name: game.i18n.localize("LANCER.Settings.FontSelect"),
+        scope: 'world',
+        config: true,
+        type: String, 
+        default: 'MOSCOW2024', 
+        choices: {
+            'MOSCOW2024': 'MOSCOW2024',
+            'Undertale': 'Undertale',
+			'TeletactileRus': 'TeletactileRus'
+        }
+    });
+	
     game.settings.register('lancer-communicator', 'messageFontSize', {
         name: game.i18n.localize('LANCER.Settings.FontSize'),
         scope: 'world',
@@ -682,10 +720,14 @@ Hooks.once('init', () => {
 Hooks.once('ready', () => {
     try {
         const fontSize = game.settings.get('lancer-communicator', 'messageFontSize');
+        const fontFamily = game.settings.get('lancer-communicator', 'communicatorFont');
+        
         document.documentElement.style.setProperty('--message-font-size', `${fontSize}px`);
+        document.documentElement.style.setProperty('--message-font', fontFamily);
     } catch (error) {
-        console.error("Ошибка получения размера шрифта:", error);
+        console.error("Ошибка получения настроек:", error);
         document.documentElement.style.setProperty('--message-font-size', '14px');
+        document.documentElement.style.setProperty('--message-font', 'MOSCOW2024');
     }
     
     LancerCommunicator.init();
