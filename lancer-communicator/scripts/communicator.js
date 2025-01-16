@@ -104,7 +104,7 @@ class LancerCommunicator {
 
             index++;
             if (index < messageData.text.length) {
-                setTimeout(typing, Math.random() * 40 + 30);
+				setTimeout(typing, Math.max(10, 200 - typingSpeed));
             } else {
                 setTimeout(() => {
                     if (!communicatorData.isCancelled) {
@@ -195,7 +195,7 @@ class LancerCommunicator {
 			{ 
 				key: 'typingSpeed', 
 				type: Number, 
-				default: 50, 
+				default: 130, 
 				config: true,
 				range: { min: 10, max: 200, step: 10 }
 			},
