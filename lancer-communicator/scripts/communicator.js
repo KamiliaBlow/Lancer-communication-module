@@ -319,9 +319,17 @@ class LancerCommunicator {
 	}
 	
     static openCommunicatorSettings() {
-		const lastPortrait = game.settings.get('lancer-communicator', 'lastPortrait');
+
+		const selectedToken = canvas.tokens.controlled[0];
+
+		let lastPortrait = game.settings.get('lancer-communicator', 'lastPortrait');
+		
+		let lastCharacterName = game.settings.get('lancer-communicator', 'lastCharacterName');
+		if (selectedToken) {
+			lastCharacterName = selectedToken.name; 
+		}
+
 		const lastSound = game.settings.get('lancer-communicator', 'lastSound');
-		const lastCharacterName = game.settings.get('lancer-communicator', 'lastCharacterName');
 		const lastStyle = game.settings.get('lancer-communicator', 'lastMessageStyle');
 		const fontSize = game.settings.get('lancer-communicator', 'messageFontSize');
 		
@@ -484,9 +492,16 @@ class LancerCommunicator {
 				const fontSizeDisplay = html.find('#font-size-display');
 				const styleSelect = html.find('#message-style');
 				const preview = html.find('#style-preview');
+
 				const lastPortrait = game.user.getFlag('lancer-communicator', 'lastPortrait');
 				if (lastPortrait) {
 					html.find('#portrait-path').val(lastPortrait);
+				}
+
+				const selectedToken = canvas.tokens.controlled[0]; // Берем первый выбранный токен
+				if (selectedToken) {
+					const tokenPortrait = selectedToken.document.texture.src;
+					html.find('#portrait-path').val(tokenPortrait);
 				}
 					
                 html.find('#select-portrait').on('click', () => {
