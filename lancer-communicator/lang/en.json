@@ -28,6 +28,7 @@
 		"voiceVolume": "Voice Volume",
 		"FontSize": "Font size",
 		"FontSelect": "Font select",
+		"AllowPlayersAccess": "Allow Players to Access Communicator",
 		"Warnings": {
 			"NoCharacterName": "Please enter character name!",
 			"NoPortrait": "Please select a portrait!",

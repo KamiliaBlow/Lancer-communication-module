@@ -140,7 +140,9 @@ class LancerCommunicator {
         this.registerSettings();
 
         Hooks.on('renderSceneControls', (controls, html) => {
-            if (!game.user.isGM) return;
+			const allowPlayersAccess = game.settings.get('lancer-communicator', 'allowPlayersAccess');
+			
+            if (!game.user.isGM && !allowPlayersAccess) return;
 
             const tokenToolPanel = html.find('#tools-panel-token');
             
@@ -196,6 +198,15 @@ class LancerCommunicator {
 				'Undertale': 'Undertale',
 				'TeletactileRus': 'TeletactileRus'
 			}
+		});
+		
+		game.settings.register('lancer-communicator', 'allowPlayersAccess', {
+			name: game.i18n.localize("LANCER.Settings.AllowPlayersAccess"),
+			scope: 'world',
+			config: true,
+			type: Boolean,
+			requiresReload: true,
+			default: false
 		});
 		
 		const settings = [
