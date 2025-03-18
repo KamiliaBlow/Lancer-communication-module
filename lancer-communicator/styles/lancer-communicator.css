@@ -14,8 +14,8 @@
 }
 
 :root {
-	--message-font-size: 14px;
-	--message-font: 'MOSCOW2024';
+    --message-font-size: 14px;
+    --message-font: 'MOSCOW2024';
 }
 
 .lancer-communicator-dialog .lcm-form-group {
@@ -34,7 +34,7 @@
     width: 100%;
     padding: 5px;
     border-radius: 4px;
-	max-height: 200px;
+    max-height: 200px;
     resize: vertical; /* Разрешаем только вертикальное растягивание */
     overflow-y: auto;
 }
@@ -42,7 +42,7 @@
 .lancer-communicator-dialog .lcm-input-group {
     display: flex;
     align-items: center;
-	gap: 5px; 
+    gap: 5px; 
 }
 
 .lancer-communicator-dialog .lcm-input-group button {
@@ -59,7 +59,7 @@
 
 .lancer-communicator-dialog .lcm-input-group input {
     flex-grow: 1;
-	height: 26px;
+    height: 26px;
 }
 
 .lancer-communicator-dialog .lcm-input-group {
@@ -96,7 +96,7 @@
     align-items: flex-start; /* Выравнивание по вертикали */
     justify-content: flex-start; /* Выравнивание по левому краю */
     padding: 10px;
-	position: relative; /* Для абсолютного позиционирования курсора */
+    position: relative; /* Для абсолютного позиционирования курсора */
 }
 
 #lancer-communicator-message .lcm-portrait-container {
@@ -104,24 +104,23 @@
     flex-direction: column;
     align-items: center;
     margin-right: 10px;
-    width: 80px; /* Фиксированная ширина */
+    width: 90px; /* Фиксированная ширина */
     flex-shrink: 0; /* Запрещаем уменьшение контейнера */
 }
 
 #lancer-communicator-message .lcm-portrait {
-    width: 80px;
-    height: 80px;
+    width: 90px;
+    height: 90px;
     object-fit: cover;
     border-radius: 5px;
     flex-shrink: 0; /* Запрещаем уменьшение аватарки */
 }
 
 #lancer-communicator-message .lcm-message-text {
-	font-size: var(--message-font-size, 14px) !important; 
+    font-size: var(--message-font-size, 14px) !important; 
     flex-grow: 1;
     word-wrap: break-word;
     text-align: left; /* Выравнивание текста по левому краю */
-	text-transform: uppercase; /* Все буквы заглавные */
 }
 
 #lancer-communicator-message .lcm-message-text,
@@ -169,7 +168,8 @@
 }
 
 #lancer-communicator-message .lcm-character-name {
-    font-family: 'MOSCOW2024', monospace;
+    font-family: var(--message-font, 'MOSCOW2024'), monospace;
+	font-size: 20px;
     color: #03FB8D;
     text-align: center;
     margin-top: 5px;
@@ -183,7 +183,7 @@
 #lancer-communicator-message.style-green {
     border: 1px solid #03FB8D;
     box-shadow: 0 0 15px rgba(3, 251, 141, 0.8);
-	background-color: rgba(0, 255, 0, 0.1);
+    background-color: rgba(0, 255, 0, 0.1);
     border-color: green;
     color: green;
 }
@@ -192,7 +192,7 @@
 #lancer-communicator-message.style-blue {
     border: 1px solid #00A4FF;
     box-shadow: 0 0 15px rgba(0, 164, 255, 0.8);
-	background-color: rgba(0, 0, 255, 0.1);
+    background-color: rgba(0, 0, 255, 0.1);
     border-color: blue;
     color: #00A4FF;
 }
@@ -214,7 +214,7 @@
 #lancer-communicator-message.style-yellow {
     border: 1px solid #FFD700;
     box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
-	background-color: rgba(255, 255, 0, 0.1);
+    background-color: rgba(255, 255, 0, 0.1);
     border-color: yellow;
     color: #FFD700;
 }
@@ -236,7 +236,7 @@
 #lancer-communicator-message.style-red {
     border: 1px solid #FF0000;
     box-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
-	background-color: rgba(255, 0, 0, 0.1);
+    background-color: rgba(255, 0, 0, 0.1);
     border-color: red;
     color: #FF0000;
 }
@@ -259,7 +259,7 @@
     border: 1px solid darkred;
     box-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
     color: darkred;
-	background-color: rgba(128, 0, 0, 0.1);
+    background-color: rgba(128, 0, 0, 0.1);
     border-color: maroon;
     animation: glitch-damage 0.3s infinite;
 }
@@ -345,8 +345,7 @@
     animation: lcm-portrait-shake 0.30s infinite;
     filter: 
         contrast(120%) 
-        brightness(110%);
-    box-shadow: 
+        brightness(110%);    box-shadow: 
         0 0 5px rgba(255, 0, 0, 0.3),
         1px 1px 3px rgba(255, 0, 0, 0.2);
     transform-origin: center;
@@ -355,4 +354,38 @@
 
 #lancer-communicator-message.style-damaged .lcm-portrait:hover {
     animation-play-state: paused;
+}
+
+#lancer-communicator-message.style-undertale {
+    border: 2px solid white;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    background-color: rgba(0, 0, 0, 0.95);
+    color: white;
+}
+#lancer-communicator-message.style-undertale .lcm-message-text {
+    color: white;
+}
+#lancer-communicator-message.style-undertale .lcm-character-name {
+    color: white;
+}
+#lancer-communicator-message.style-undertale .lcm-portrait {
+    border-color: white;
+    box-shadow: 0 0 10px rgba(255, 255, 0, 0.5);
+}
+#lancer-communicator-message.style-undertale .lcm-message-text::after {
+    color: white;
+}
+
+@keyframes lcm-shake-text {
+    0% { transform: translateX(0) translateY(0); }
+    25% { transform: translateX(-2px) translateY(1px); }
+    50% { transform: translateX(2px) translateY(-1px); }
+    75% { transform: translateX(-1px) translateY(-1px); }
+    100% { transform: translateX(0) translateY(0); }
+}
+
+.lcm-shake-text {
+    display: inline-block;
+    animation: lcm-shake-text 0.15s infinite;
+    color: inherit; /* Наследуем цвет */
 }
