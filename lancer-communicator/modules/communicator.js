@@ -473,27 +473,34 @@ export class LancerCommunicator {
                 if (i < message.length) {
                     const currentChar = message.charAt(i);
                     const nextChar = i + 1 < message.length ? message.charAt(i + 1) : '';
+                    const prevChar = i > 0 ? message.charAt(i - 1) : '';
                     
                     i++;
                     
                     // Проверяем, заглавная ли текущая буква
                     const isUpperCase = /[A-ZА-Я]/.test(currentChar);
                     
-                    // Проверяем, заглавная ли следующая буква или это пробел/знак препинания/конец текста
-                    const nextIsUpperCaseOrSpace = /[A-ZА-Я\s\.,!?;:-]/.test(nextChar) || nextChar === '';
+                    // Проверка на начало предложения или строки (после точки, ! ? или в начале текста)
+                    const isStartOfSentence = i === 1 || /[\.\!\?\n]/.test(prevChar);
+					
+                    // Проверяем, заглавная ли следующая буква - признак КАПСЛОКА
+                    const nextIsUpperCase = /[A-ZА-Я]/.test(nextChar);
                     
                     // Проверяем, строчная ли следующая буква
                     const nextIsLowerCase = /[a-zа-я]/.test(nextChar);
                     
-                    // Трясем ТОЛЬКО заглавные буквы, за которыми следует другая заглавная буква или пробел/знак/конец
-                    // НЕ трясем заглавные буквы, за которыми следуют строчные буквы
-                    if (isUpperCase && nextIsUpperCaseOrSpace && !nextIsLowerCase) {
+                    // Анимируем букву если:
+                    // 1. Это заглавная буква И
+                    // 2. (следующая буква тоже заглавная ИЛИ это конец слова/предложения) И
+                    // 3. Это НЕ начало предложения (или это начало предложения, но следующая тоже заглавная)
+                    if (isUpperCase && (nextIsUpperCase || /[\s\.,!?;:-]/.test(nextChar) || nextChar === '') && 
+                        (!isStartOfSentence || nextIsUpperCase)) {
                         const span = document.createElement('span');
                         span.textContent = currentChar;
                         span.classList.add('lcm-shake-text');
                         messageText.appendChild(span);
                     } else {
-                        // Обычные символы и заглавные буквы, за которыми следуют строчные
+                        // Обычные символы или заглавные буквы в начале предложения без КАПСЛОКА
                         const textNode = document.createTextNode(currentChar);
                         messageText.appendChild(textNode);
                     }
