@@ -1,4 +1,22 @@
 # Lancer-communication-module
+Update note
+```
+Update v0.5.1
+- Removed forced setting of uppercase letters
+- Added light shaking animation for capitalized words (undertale inspired)
+- '.,!?;:' etc. now affect the pause between words/sentences.
+- Foundry version 11 is no longer supported
+- Small refactoring of the module to APP V2.
+- Fonts can now be changed directly in the configurator without reloading the table.
+- Added Undertale style
+
+Planned:
+- playing a soundtrack as an alternative to quick sound
+- voice selection for players from gm folder (if you let players use the module)
+- ???
+
+```
+
 EN
 ```
 This module allows you to display a message to the GM for all players on behalf of the NPC, this can be useful for briefing or playing as the AI.
