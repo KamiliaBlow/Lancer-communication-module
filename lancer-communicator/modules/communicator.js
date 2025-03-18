@@ -471,38 +471,52 @@ export class LancerCommunicator {
             // Функция для добавления символов с задержкой
             const typeWriter = () => {
                 if (i < message.length) {
+                    // Получаем текст до текущего символа
                     const currentChar = message.charAt(i);
                     const nextChar = i + 1 < message.length ? message.charAt(i + 1) : '';
                     const prevChar = i > 0 ? message.charAt(i - 1) : '';
+                    
+                    // Создаем "окно" текста для анализа
+                    const previousChars = message.substring(Math.max(0, i - 20), i);
                     
                     i++;
                     
                     // Проверяем, заглавная ли текущая буква
                     const isUpperCase = /[A-ZА-Я]/.test(currentChar);
                     
-                    // Проверка на начало предложения или строки (после точки, ! ? или в начале текста)
-                    const isStartOfSentence = i === 1 || /[\.\!\?\n]/.test(prevChar);
-					
-                    // Проверяем, заглавная ли следующая буква - признак КАПСЛОКА
-                    const nextIsUpperCase = /[A-ZА-Я]/.test(nextChar);
-                    
-                    // Проверяем, строчная ли следующая буква
-                    const nextIsLowerCase = /[a-zа-я]/.test(nextChar);
-                    
-                    // Анимируем букву если:
-                    // 1. Это заглавная буква И
-                    // 2. (следующая буква тоже заглавная ИЛИ это конец слова/предложения) И
-                    // 3. Это НЕ начало предложения (или это начало предложения, но следующая тоже заглавная)
-                    if (isUpperCase && (nextIsUpperCase || /[\s\.,!?;:-]/.test(nextChar) || nextChar === '') && 
-                        (!isStartOfSentence || nextIsUpperCase)) {
-                        const span = document.createElement('span');
-                        span.textContent = currentChar;
-                        span.classList.add('lcm-shake-text');
-                        messageText.appendChild(span);
+                    if (isUpperCase) {
+                        // Определяем контекст буквы
+                        
+                        // Проверка на начало текста
+                        const isFirstChar = i === 1;
+                        
+                        // Проверка на начало предложения после знаков .!?
+                        const isPeriodBefore = /[\.\!\?]\s*$/.test(previousChars);
+                        
+                        // Проверка после переноса строки
+                        const isNewlineBefore = previousChars.includes('\n');
+                        
+                        // Находится ли буква в начале предложения
+                        const isStartOfSentence = isFirstChar || isPeriodBefore || (isNewlineBefore && !/\S/.test(previousChars.substring(previousChars.lastIndexOf('\n'))));
+                        
+                        // Проверка, находится ли буква в КАПСЛОКЕ
+                        // Текущая буква заглавная И следующая тоже заглавная или это конец слова
+                        const isPartOfAllCaps = /[A-ZА-Я]/.test(nextChar) || (nextChar === ' ' && /[A-ZА-Я]/.test(prevChar));
+                        
+                        // Буквы в капсе или заглавные буквы в середине предложения должны анимироваться
+                        // Буквы в начале предложения (но не в капсе) НЕ должны анимироваться
+                        if (!isStartOfSentence || isPartOfAllCaps) {
+                            const span = document.createElement('span');
+                            span.textContent = currentChar;
+                            span.classList.add('lcm-shake-text');
+                            messageText.appendChild(span);
+                        } else {
+                            // Обычная заглавная буква в начале предложения
+                            messageText.appendChild(document.createTextNode(currentChar));
+                        }
                     } else {
-                        // Обычные символы или заглавные буквы в начале предложения без КАПСЛОКА
-                        const textNode = document.createTextNode(currentChar);
-                        messageText.appendChild(textNode);
+                        // Обычные символы просто добавляем
+                        messageText.appendChild(document.createTextNode(currentChar));
                     }
                     
                     // Воспроизводим звук на каждый символ, кроме пробелов и знаков препинания
@@ -554,108 +568,161 @@ export class LancerCommunicator {
 }
 
     /**
-     * Создает макрос для отправки сообщения коммуникатора
-     */
+    * Создает макрос для отправки сообщения коммуникатора
+    */
     static createCommunicatorMacro(characterName, portraitPath, message, soundPath, style, fontSize, fontFamily = null) {
         // Проверяем, может ли пользователь создавать макросы
         if (!game.user.can('MACRO_SCRIPT')) {
-            ui.notifications.warn("У вас нет разрешения создавать макросы скриптов");
+            ui.notifications.warn(game.i18n.localize("LANCER.Settings.Warnings.CreateMacroTextPerm"));
             return;
         }
         
-        // Форматируем параметры для макроса
-        const macroName = `${characterName} Message`;
-        const commandText = `
-            // Созданный макрос коммуникатора Lancer
-            game.modules.get('lancer-communicator').api.sendCommunicatorMessage(
-                "${characterName}",
-                "${portraitPath}",
-                "${message.replace(/"/g, '\\"')}",
-                "${soundPath}",
-                "${style}",
-                ${fontSize},
-                "${fontFamily || ''}"
-            );
-        `;
-        
-        // Создаем макрос
-        Macro.create({
-            name: macroName,
-            type: "script",
-            command: commandText,
-            img: portraitPath
-        }).then(macro => {
-            ui.notifications.info(`Макрос "${macroName}" успешно создан!`);
-        }).catch(error => {
-            ui.notifications.error(`Ошибка создания макроса: ${error}`);
-            console.error(error);
-        });
+        // Сначала спрашиваем имя макроса
+        new Dialog({
+            title: game.i18n.localize("LANCER.Settings.CreateMacroName"),
+            content: `<div>
+                <p>Введите имя для нового макроса:</p>
+                <input type="text" id="macro-name-input" value="${characterName} Message" style="width: 100%;">
+            </div>`,
+            buttons: {
+                create: {
+                    icon: '',
+                    label: game.i18n.localize("LANCER.Settings.Create"),
+                    callback: (html) => {
+                        const macroName = html[0].querySelector('#macro-name-input').value.trim();
+                        
+                        if (!macroName) {
+                            ui.notifications.warn(game.i18n.localize("LANCER.Settings.Warnings.CreateMacroTextInt"));
+                            return;
+                        }
+                        
+                        // Форматируем параметры для макроса
+                        const commandText = `
+                            // Созданный макрос коммуникатора Lancer
+                            game.modules.get('lancer-communicator').api.sendCommunicatorMessage(
+                                "${characterName}",
+                                "${portraitPath}",
+                                "${message.replace(/"/g, '\\"')}",
+                                "${soundPath}",
+                                "${style}",
+                                ${fontSize},
+                                "${fontFamily || ''}"
+                            );
+                        `;
+						
+                        // Создаем макрос
+                        Macro.create({
+                            name: macroName,
+                            type: "script",
+                            command: commandText,
+                            img: portraitPath
+                        }).then(macro => {
+                            ui.notifications.info(`Макрос "${macroName}" успешно создан!`);
+                        }).catch(error => {
+                            ui.notifications.error(`Ошибка создания макроса: ${error}`);
+                            console.error(error);
+                        });
+                    }
+                },
+                cancel: {
+                    icon: '',
+                    label: game.i18n.localize("LANCER.Settings.Cancel")
+                }
+            },
+            default: "create"
+        }).render(true);
     }
 
     /**
-     * Создает быстрый макрос коммуникатора с возможностью ввода сообщения
-     */
-    static createQuickCommunicatorMacro(characterName, portraitPath, soundPath, style, fontSize, fontFamily = null) {
-        // Проверяем права пользователя
-        if (!game.user.can('MACRO_SCRIPT')) {
-            ui.notifications.warn("У вас нет разрешения создавать макросы скриптов");
-            return;
-        }
-        
-        // Формируем имя и команду для макроса
-        const macroName = `${characterName} Quick`;
-        
-        const commandText = `
-            // Быстрый макрос коммуникатора
-            let messageText = await new Promise((resolve) => {
-                new Dialog({
-                    title: "Сообщение для ${characterName}",
-                    content: \`<div><textarea id="quickMessageInput" rows="5" style="width:100%"></textarea></div>\`,
-                    buttons: {
-                        send: {
-                            icon: '',
-                            label: "Отправить",
-                            callback: (html) => {
-                                const msg = html[0].querySelector("#quickMessageInput").value;
-                                resolve(msg);
-                            }
-                        },
-                        cancel: {
-                            icon: '',
-                            label: "Отмена",
-                            callback: () => resolve(null)
-                        }
-                    },
-                    default: "send",
-                    close: () => resolve(null)
-                }).render(true);
-            });
-            
-            // Если сообщение введено, отправляем его
-            if (messageText && messageText.trim()) {
-                game.modules.get('lancer-communicator').api.sendCommunicatorMessage(
-                    "${characterName}",
-                    "${portraitPath}",
-                    messageText,
-                    "${soundPath}",
-                    "${style}",
-                    ${fontSize},
-                    fontFamily = null
-                );
-            }
-        `;
-        
-        // Создаем макрос через современный API
-        Macro.create({
-            name: macroName,
-            type: "script",
-            command: commandText,
-            img: portraitPath
-        }).then(macro => {
-            ui.notifications.info(`Быстрый макрос "${macroName}" успешно создан!`);
-        }).catch(error => {
-            ui.notifications.error(`Ошибка создания макроса: ${error}`);
-            console.error(error);
-        });
-    }
+	 * Создает быстрый макрос коммуникатора с возможностью ввода сообщения
+	 */
+	static createQuickCommunicatorMacro(characterName, portraitPath, soundPath, style, fontSize, fontFamily = null) {
+		// Проверяем права пользователя
+		if (!game.user.can('MACRO_SCRIPT')) {
+			ui.notifications.warn(game.i18n.localize("LANCER.Settings.Warnings.CreateMacroTextPerm"));
+			return;
+		}
+		
+		// Сначала спрашиваем имя макроса
+		new Dialog({
+			title: game.i18n.localize("LANCER.Settings.CreateQuickMacroName"),
+			content: `<div>
+				<p>Введите имя для нового быстрого макроса:</p>
+				<input type="text" id="quick-macro-name-input" value="${characterName} Quick" style="width: 100%;">
+			</div>`,
+			buttons: {
+				create: {
+					icon: '',
+					label: game.i18n.localize("LANCER.Settings.Create"),
+					callback: (html) => {
+						const macroName = html[0].querySelector('#quick-macro-name-input').value.trim();
+						
+						if (!macroName) {
+							ui.notifications.warn(game.i18n.localize("LANCER.Settings.Warnings.CreateMacroTextInt"));
+							return;
+						}
+						
+						// Формируем команду для макроса
+						const commandText = `
+							// Быстрый макрос коммуникатора
+							let messageText = await new Promise((resolve) => {
+								new Dialog({
+									title: "Сообщение для ${characterName}",
+									content: \`<div><textarea id="quickMessageInput" rows="5" style="width:100%"></textarea></div>\`,
+									buttons: {
+										send: {
+											icon: '',
+											label: game.i18n.localize("LANCER.Settings.Send"),
+											callback: (html) => {
+												const msg = html[0].querySelector("#quickMessageInput").value;
+												resolve(msg);
+											}
+										},
+										cancel: {
+											icon: '',
+											label: game.i18n.localize("LANCER.Settings.Cancel"),
+											callback: () => resolve(null)
+										}
+									},
+									default: "send",
+									close: () => resolve(null)
+								}).render(true);
+							});
+							
+							// Если сообщение введено, отправляем его
+							if (messageText && messageText.trim()) {
+								game.modules.get('lancer-communicator').api.sendCommunicatorMessage(
+									"${characterName}",
+									"${portraitPath}",
+									messageText,
+									"${soundPath}",
+									"${style}",
+									${fontSize},
+									"${fontFamily || ''}"
+								);
+							}
+						`;
+						
+						// Создаем макрос через современный API
+						Macro.create({
+							name: macroName,
+							type: "script",
+							command: commandText,
+							img: portraitPath
+						}).then(macro => {
+							ui.notifications.info(`Быстрый макрос "${macroName}" успешно создан!`);
+						}).catch(error => {
+							ui.notifications.error(`Ошибка создания макроса: ${error}`);
+							console.error(error);
+						});
+					}
+				},
+				cancel: {
+					icon: '',
+					label: game.i18n.localize("LANCER.Settings.Cancel")
+				}
+			},
+			default: "create"
+		}).render(true);
+	}
 }

@@ -1,7 +1,11 @@
 {
 	"LANCER.Settings": {
 		"CreateMacro": "Text Macros",
+		"CreateMacroName": "Text Macros",
 		"CreateQuickMacro": "Char Macros",
+		"CreateQuickMacroName": "Char Macros",
+		"CreateMacroTextInt": "The macros name cannot be empty",
+		"CreateMacroTextPerm": "You do not have permission to create script macros",
 		"Communicator": "Communicator",
 		"CommunicatorSettings": "Communicator Settings",
 		"CharacterName": "Character Name",
@@ -25,6 +29,7 @@
 		"MSGStyleUn": "Undertale",
 		"Send": "Send",
 		"Cancel": "Cancel",
+		"Create": "Create",
 		"typingSpeed": "Typing Speed",
 		"voiceVolume": "Voice Volume",
 		"FontFamily": "Font family",
