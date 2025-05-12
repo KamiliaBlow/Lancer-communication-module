@@ -59,6 +59,7 @@ export function registerSettings() {
             'Undertale': 'Undertale',
             'TeletactileRus': 'TeletactileRus',
             'monospace': 'Monospace',
+            'Kereru': 'Kereru',
             'serif': 'Serif',
             'sans-serif': 'Sans-serif'
         },
@@ -119,6 +120,15 @@ export function registerSettings() {
         config: false,
         type: String,
         default: 'green'
+    });
+	
+    // Сохранение последнего выбранного файла озвучки
+    game.settings.register('lancer-communicator', 'lastVoiceover', {
+        name: game.i18n.localize("LANCER.Settings.lastVoiceover"),
+        scope: 'client',
+        config: false,
+        type: String,
+        default: ''
     });
 }
 

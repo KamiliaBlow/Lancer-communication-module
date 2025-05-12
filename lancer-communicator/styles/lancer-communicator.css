@@ -13,6 +13,11 @@
     src: url('fonts/TeletactileRus.ttf') format('opentype');
 }
 
+@font-face {
+    font-family: 'Kereru';
+    src: url('fonts/Kereru.otf') format('opentype');
+}
+
 :root {
     --message-font-size: 14px;
     --message-font: 'MOSCOW2024';
