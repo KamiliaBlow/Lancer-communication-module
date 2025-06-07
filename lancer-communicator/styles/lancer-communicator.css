@@ -266,7 +266,7 @@
     color: darkred;
     background-color: rgba(128, 0, 0, 0.1);
     border-color: maroon;
-    animation: glitch-damage 0.3s infinite;
+    animation: glitch-damage 0.3s forwards;
 }
 #lancer-communicator-message.style-damaged .lcm-message-text {
     color: darkred;
