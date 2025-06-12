@@ -1,5 +1,5 @@
 # Lancer-communication-module personal version
-This is a fork for a foundry module this isn't meant for others to use so copy and use at your own risk!
+This is a fork for personal use,  this isn't meant for others to use so copy and use at your own risk! You can find the original foundry module can be found at https://github.com/KamiliaBlow/Lancer-communication-module .
 Update note
 ```
 Update v0.5.1
