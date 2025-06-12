@@ -1,4 +1,5 @@
-# Lancer-communication-module
+# Lancer-communication-module personal version
+This is a fork for a foundry module this isn't meant for others to use so copy and use at your own risk!
 Update note
 ```
 Update v0.5.1
