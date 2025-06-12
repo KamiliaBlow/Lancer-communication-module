@@ -4,6 +4,11 @@
 }
 
 @font-face {
+    font-family: 'Kitisakkullian';
+    src: url('fonts/Kitisakkullian.otf') format('opentype');
+}
+
+@font-face {
     font-family: 'Undertale';
     src: url('fonts/Undertale.otf') format('opentype');
 }
