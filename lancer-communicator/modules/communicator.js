@@ -84,6 +84,7 @@ export class LancerCommunicator {
                         <select id="font-family">
                             <option value="MOSCOW2024" ${this.settings.fontFamily === 'MOSCOW2024' ? 'selected' : ''}>MOSCOW2024</option>
                             <option value="Undertale" ${this.settings.fontFamily === 'Undertale' ? 'selected' : ''}>Undertale</option>
+			    <option value="Kitisakkullian" ${this.settings.fontFamily === 'Kitisakkullian' ? 'selected' : ''}>Kitisakkullian</option>
                             <option value="TeletactileRus" ${this.settings.fontFamily === 'TeletactileRus' ? 'selected' : ''}>TeletactileRus</option>
 							<option value="Kereru" ${this.settings.fontFamily === 'Kereru' ? 'selected' : ''}>Kereru</option>
 							<option value="Serif" ${this.settings.fontFamily === 'Serif' ? 'selected' : ''}>Serif</option>
