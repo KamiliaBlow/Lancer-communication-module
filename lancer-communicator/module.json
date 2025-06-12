@@ -32,5 +32,5 @@
     "styles": ["styles/lancer-communicator.css"],
     "url": "https://github.com/Petricorthetinkerer/Lancer-communication-module/tree/Petricorthetinkerer-patch-1",
     "manifest": "https://github.com/Petricorthetinkerer/Lancer-communication-module/blob/Petricorthetinkerer-patch-1/lancer-communicator/module.json",
-    "download": "https://github.com/KamiliaBlow/Lancer-communication-module/archive/refs/tags/v0.6.1.2.zip"
+    "download": "https://github.com/Petricorthetinkerer/Lancer-communication-module/archive/refs/heads/Petricorthetinkerer-patch-1.zip"
 }
