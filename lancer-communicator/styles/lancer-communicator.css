@@ -168,7 +168,7 @@
 }
 
 #lancer-communicator-message.collapsing {
-    animation: tv-collapse 0.5s ease-in forwards;
+    animation: tv-collapse 5.0s ease-in forwards;
     transform-origin: center;
 }
 
@@ -285,13 +285,13 @@
     color: darkred;
 }
 
-.lcm-communicator-container.style-damaged.collapsing {
-    animation: glitchOut 0.5s ease-out forwards;
-}
-
 @keyframes glitchOut {
     0% { opacity: 1; transform: scale(1); }
     100% { opacity: 0; transform: scale(0.95); }
+}
+
+.lcm-communicator-container.style-damaged.collapsing {
+    animation: glitchOut 5.0s ease-out forwards;
 }
 
 @keyframes shake-border {

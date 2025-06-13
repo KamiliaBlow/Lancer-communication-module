@@ -612,10 +612,8 @@ export class LancerCommunicator {
 
 					setTimeout(() => {
 						messageContainer.classList.add('collapsing');
-						messageContainer.addEventListener('transitionend', () => {
-							messageContainer.remove();
-							resolve();
-						}, { once: true });
+						messageContainer.remove();
+						resolve();
 					}, 5000);
 				}
 			};
