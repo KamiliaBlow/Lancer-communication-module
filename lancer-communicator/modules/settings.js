@@ -31,11 +31,11 @@ export function registerSettings() {
         config: true,
         type: Number,
         range: {
-            min: 0.01,
-            max: 0.5,
-            step: 0.01
+            min: 0.1,
+            max: 1.0,
+            step: 0.05
         },
-        default: 0.05
+        default: 0.3
     });
 	
     // Выбранное семейство шрифтов

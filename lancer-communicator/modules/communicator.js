@@ -6,7 +6,7 @@ export class LancerCommunicator {
     // Кэшированные настройки
     static settings = {
         typingSpeed: 130,
-        voiceVolume: 0.05,
+        voiceVolume: 1.0,
         fontFamily: 'MOSCOW2024'
     };
 
@@ -14,11 +14,10 @@ export class LancerCommunicator {
      * Инициализирует слушателей сокетов для коммуникации между клиентами
      */
     static initSocketListeners() {
-        if (!game.socket) {
-            console.error("Lancer Communicator | Socket not available during initialization!");
-            return;
-        }
+        if (!game.socket) return;
 		
+        this.settings.voiceVolume = game.settings.get('lancer-communicator', 'voiceVolume') || 0.3;
+
         game.socket.on('module.lancer-communicator', (payload) => {
             if (payload?.type === 'showMessage' && payload.data?.characterName) {
                 this.showCommunicatorMessage(payload.data).catch(console.error);
@@ -41,7 +40,7 @@ export class LancerCommunicator {
         const lastStyle = game.settings.get('lancer-communicator', 'lastMessageStyle');
         const fontSize = game.settings.get('lancer-communicator', 'messageFontSize');
         this.settings.typingSpeed = game.settings.get('lancer-communicator', 'typingSpeed') || 130;
-        this.settings.voiceVolume = game.settings.get('lancer-communicator', 'voiceVolume') || 0.05;
+        this.settings.voiceVolume = game.settings.get('lancer-communicator', 'voiceVolume') || 0.3;
         this.settings.fontFamily = game.settings.get('lancer-communicator', 'fontFamily') || 'MOSCOW2024';
 
         new Dialog({
@@ -245,6 +244,7 @@ export class LancerCommunicator {
                 const preview = dialog.querySelector('#style-preview');
                 const fontSizeInput = dialog.querySelector('#font-size-input');
                 const fontSizeDisplay = dialog.querySelector('#font-size-display');
+                const voiceVolumeInput = dialog.querySelector('#voice-volume');
 
                 // Обработчик для выбора портрета
                 selectPortraitBtn.addEventListener('click', () => {
@@ -396,8 +396,17 @@ export class LancerCommunicator {
                             .catch(err => console.error('Error saving font size setting', err));
                     }
 					
-					const voiceoverPath = formElement.querySelector('#voiceover-path').value;
-					game.settings.set('lancer-communicator', 'lastVoiceover', voiceoverPath);
+                    const voiceVolumeInput = formElement.querySelector('#voice-volume');
+                    if (voiceVolumeInput) {
+                        const volume = parseFloat(voiceVolumeInput.value);
+                        game.settings.set('lancer-communicator', 'voiceVolume', volume)
+                            .catch(err => console.error('Error saving voice volume', err));
+
+                        this.settings.voiceVolume = volume;
+                    }
+
+                    const voiceoverPath = formElement.querySelector('#voiceover-path').value;
+                    game.settings.set('lancer-communicator', 'lastVoiceover', voiceoverPath);
                 }
             }
         }).render(true);
@@ -490,8 +499,9 @@ export class LancerCommunicator {
         let soundInstance = null;
         if (voiceoverPath) {
 			try {
+				const volume = game.settings.get('lancer-communicator', 'voiceVolume') || 0.3;
 				voiceoverInstance = new Audio(voiceoverPath);
-				voiceoverInstance.volume = this.settings.voiceVolume;
+				voiceoverInstance.volume = volume + 0.2;
 				
 				await new Promise((resolve, reject) => {
 					voiceoverInstance.addEventListener('canplaythrough', resolve);
@@ -573,7 +583,7 @@ export class LancerCommunicator {
 					if (voiceoverPath) {
 						// Не воспроизводим звук для каждого символа
 					} else if (soundInstance && !/[\s\.,!?;:-]/.test(currentChar)) {
-						const volume = this.settings.voiceVolume;
+						const volume = game.settings.get('lancer-communicator', 'voiceVolume') || 0.3;
 						const randomPitch = 0.85 + (Math.random() * 0.3);
 
 						// Останавливаем предыдущий звук, если он есть
