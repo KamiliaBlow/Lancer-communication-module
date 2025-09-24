@@ -38,6 +38,8 @@
 		"FontFamily": "Тип шрифта",
 		"FontSize": "Размер шрифта",
 		"FontSelect": "Выбор шрифта",
+		"EnableTextShake": "Включить тряску текста",
+		"EnableTextShakeHint": "Включает/выключает анимацию тряски для заглавных букв",
 		"AllowPlayersAccess": "Позволить игрокам использовать Коммуникатор",
 		"Warnings": {
 			"NoCharacterName": "Пожалуйста, введите имя персонажа!",

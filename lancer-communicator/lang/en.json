@@ -38,6 +38,8 @@
 		"FontFamily": "Font family",
 		"FontSize": "Font size",
 		"FontSelect": "Font select",
+		"EnableTextShake": "Enable Text Shake",
+		"EnableTextShakeHint": "Toggle shaking animation for uppercase text",
 		"AllowPlayersAccess": "Allow Players to Access Communicator",
 		"Warnings": {
 			"NoCharacterName": "Please enter character name!",

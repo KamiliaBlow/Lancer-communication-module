@@ -569,7 +569,13 @@ export class LancerCommunicator {
                         if (!isStartOfSentence || isPartOfAllCaps) {
                             const span = document.createElement('span');
                             span.textContent = currentChar;
-                            span.classList.add('lcm-shake-text');
+											
+                            // Добавляем класс тряски только если включено в настройках
+                            const shakeEnabled = game.settings.get('lancer-communicator', 'enableTextShake');
+                            if (shakeEnabled) {
+                                span.classList.add('lcm-shake-text');
+                            }
+	
                             messageText.appendChild(span);
                         } else {
                             // Обычная заглавная буква в начале предложения

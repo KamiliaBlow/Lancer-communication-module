@@ -52,7 +52,7 @@ export function registerSettings() {
     game.settings.register('lancer-communicator', 'communicatorFont', {
         name: game.i18n.localize("LANCER.Settings.FontSelect"),
         scope: 'world',
-        config: true,
+        config: false,
         type: String,
         choices: {
             'MOSCOW2024': 'MOSCOW2024',
@@ -130,5 +130,14 @@ export function registerSettings() {
         type: String,
         default: ''
     });
+	
+    game.settings.register('lancer-communicator', 'enableTextShake', {
+    name: game.i18n.localize("LANCER.Settings.EnableTextShake") || "Enable Text Shake",
+    hint: game.i18n.localize("LANCER.Settings.EnableTextShakeHint") || "Toggle shaking animation for uppercase or emphasized text",
+    scope: 'world',
+    config: true,
+    type: Boolean,
+    default: true
+});
 }
 

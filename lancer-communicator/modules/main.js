@@ -5,62 +5,70 @@ import { registerAPI } from './api.js';
 // Инициализация модуля
 Hooks.once('init', () => {
     console.log('Lancer Communicator | Initializing');
-    
-    // Регистрация настроек модуля
     registerSettings();
-    
-    // Регистрация API 
     registerAPI();
-});
 
-// В main.js - обновите хук getSceneControlButtons
-Hooks.on('getSceneControlButtons', (controls) => {
-    console.log('Lancer Communicator | getSceneControlButtons hook fired', controls);
-    
-    // Проверяем права доступа
-    const allowPlayersAccess = game.settings.get('lancer-communicator', 'allowPlayersAccess');
-    console.log('Lancer Communicator | allowPlayersAccess:', allowPlayersAccess, 'isGM:', game.user.isGM);
-    
-    if (!game.user.isGM && !allowPlayersAccess) {
-        console.log('Lancer Communicator | User does not have permission to see button');
-        return;
-    }
-    
-    // Находим группу инструментов токенов
-    const tokenTools = controls.find(c => c.name === "token");
-    console.log('Lancer Communicator | Found token tools:', !!tokenTools);
-    
-    if (tokenTools) {
-        // Добавляем кнопку в инструменты токенов
-        console.log('Lancer Communicator | Adding button to token tools');
-        tokenTools.tools.push({
+    // === ДОБАВЛЕНИЕ КНОПКИ В ИНСТРУМЕНТЫ ТОКЕНОВ (v12 + v13) ===
+    Hooks.on('getSceneControlButtons', (controls) => {
+        const allowPlayersAccess = game.settings.get('lancer-communicator', 'allowPlayersAccess');
+        if (!game.user.isGM && !allowPlayersAccess) return;
+
+        // Определяем, используется ли Foundry v13+
+        const isV13 = !foundry.utils.isNewerVersion("13.0.0", game.version);
+
+        let tokenControl;
+        if (isV13) {
+            // В v13: controls — это объект, tokens — прямое свойство
+            tokenControl = controls.tokens;
+        } else {
+            // В v12: controls — массив, ищем элемент с name === "token"
+            tokenControl = controls.find(c => c.name === "token");
+        }
+
+        if (!tokenControl?.tools) return;
+
+        const toolConfig = {
             name: "communicator",
             title: game.i18n.localize("LANCER.Settings.Communicator") || "Lancer Communicator",
             icon: "fas fa-satellite-dish",
             visible: true,
-            onClick: () => {
-                console.log('Lancer Communicator | Button clicked');
-                LancerCommunicator.openCommunicatorSettings();
-            },
             button: true
-        });
-    }
+        };
+
+        if (isV13) {
+            // В v13 инструменты — это объект, ключ — имя инструмента
+            tokenControl.tools["communicator"] = {
+                ...toolConfig,
+                onChange: () => {
+                    console.log('Lancer Communicator | Button clicked (v13)');
+                    LancerCommunicator.openCommunicatorSettings();
+                }
+            };
+        } else {
+            // В v12 инструменты — это массив
+            if (!tokenControl.tools.some(t => t.name === "communicator")) {
+                tokenControl.tools.push({
+                    ...toolConfig,
+                    onClick: () => {
+                        console.log('Lancer Communicator | Button clicked (v12)');
+                        LancerCommunicator.openCommunicatorSettings();
+                    }
+                });
+            }
+        }
+    });
 });
 
 // Готовность системы
 Hooks.once('ready', () => {
     console.log('Lancer Communicator | Ready');
-    
-    // Проверка локализации
     console.log('Lancer Communicator | Localization test:', 
         game.i18n.localize("LANCER.Settings.Communicator"), 
         game.i18n.has("LANCER.Settings.Communicator"));
-    
-    // Устанавливаем переменные CSS
+
     try {
         const fontSize = game.settings.get('lancer-communicator', 'messageFontSize') || 14;
         const fontFamily = game.settings.get('lancer-communicator', 'communicatorFont') || 'MOSCOW2024';
-        
         document.documentElement.style.setProperty('--message-font-size', `${fontSize}px`);
         document.documentElement.style.setProperty('--message-font', fontFamily);
     } catch (error) {
@@ -68,7 +76,6 @@ Hooks.once('ready', () => {
         document.documentElement.style.setProperty('--message-font-size', '14px');
         document.documentElement.style.setProperty('--message-font', 'MOSCOW2024');
     }
-    
-    // Инициализация сокетов для коммуникатора
+
     LancerCommunicator.initSocketListeners();
 });
