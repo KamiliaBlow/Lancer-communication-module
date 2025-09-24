@@ -54,9 +54,12 @@ export class LancerCommunicator {
                     <div class="lcm-form-group">
                         <label>${game.i18n.localize("LANCER.Settings.Portrait")}</label>
                         <div class="lcm-input-group">
-                            <input type="text" id="portrait-path" value="${lastPortrait || ''}" readonly placeholder="${game.i18n.localize("LANCER.Settings.SelectPortrait")}">
-                            <button type="button" id="select-portrait">${game.i18n.localize("LANCER.Settings.SelectPortrait")}</button>
+                            <input type="text" id="portrait-path" value="${lastPortrait || ''}" placeholder="${game.i18n.localize("LANCER.Settings.EnterPortraitURL")}">
+                            <button type="button" id="select-portrait">${game.i18n.localize("LANCER.Settings.SelectFromLibrary")}</button>
                         </div>
+                        <small style="display:block; margin-top:4px; color:#aaa;">
+                            ${game.i18n.localize("LANCER.Settings.PortraitHint") || "Enter a direct image URL or select from library"}
+                        </small>
                     </div>
                     <div class="lcm-form-group">
                         <label>${game.i18n.localize("LANCER.Settings.MessageText")}</label>

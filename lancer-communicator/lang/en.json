@@ -40,6 +40,9 @@
 		"FontSelect": "Font select",
 		"EnableTextShake": "Enable Text Shake",
 		"EnableTextShakeHint": "Toggle shaking animation for uppercase text",
+		"EnterPortraitURL": "Enter image URL or path",
+		"SelectFromLibrary": "Select from library",
+		"PortraitHint": "You can paste a direct image URL (e.g. from Imgur) or select a file from your Foundry library.",
 		"AllowPlayersAccess": "Allow Players to Access Communicator",
 		"Warnings": {
 			"NoCharacterName": "Please enter character name!",
