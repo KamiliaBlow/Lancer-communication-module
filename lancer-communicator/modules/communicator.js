@@ -527,6 +527,15 @@ export class LancerCommunicator {
                 autoSpeedBtn.textContent = '...';
 
                 const duration = await this._getAudioDuration(voiceoverPath);
+                
+                // Проверка минимальной длительности озвучки (3 секунды)
+                if (duration < 3) {
+                    ui.notifications.warn(game.i18n.localize('LANCER.Settings.Warnings.VoiceoverTooShort'));
+                    autoSpeedBtn.disabled = false;
+                    autoSpeedBtn.textContent = game.i18n.localize('LANCER.Settings.autoSpeed');
+                    return;
+                }
+                
                 const textLength = messageText.trim().length;
                 const calculatedSpeed = this._calculateTypingSpeedFromAudio(duration, textLength);
 
@@ -987,6 +996,12 @@ game.modules.get('lancer-communicator').api.sendCommunicatorMessage(
 
         const escapedName = this._escapeHtml(characterName);
         const typingSpeedArg = typingSpeed !== null ? typingSpeed : 'null';
+        const globalTypingSpeed = game.settings.get('lancer-communicator', 'globalTypingSpeed');
+
+        // Генерируем опции стилей для селекта
+        const styleOptions = this.STYLES.map(s =>
+            `<option value="${s.value}" ${style === s.value ? 'selected' : ''}>${game.i18n.localize(s.i18nKey) || s.value}</option>`
+        ).join('');
 
         new Dialog({
             title: game.i18n.localize('LANCER.Settings.CreateQuickMacroName'),
@@ -1013,40 +1028,121 @@ game.modules.get('lancer-communicator').api.sendCommunicatorMessage(
                             return;
                         }
 
+                        // Экранируем строки для вставки в шаблон
+                        const escapedCharName = characterName.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/`/g, '\\`');
+                        const escapedPortraitPath = portraitPath.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/`/g, '\\`');
+                        const escapedSoundPath = soundPath.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/`/g, '\\`');
+                        const escapedVoiceoverPath = voiceoverPath.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/`/g, '\\`');
+
                         const commandText = `// Lancer Communicator Quick Macro
-let messageText = await new Promise((resolve) => {
-    new Dialog({
-        title: "${characterName.replace(/"/g, '\\"')}",
-        content: \`<form class="lancer-communicator-dialog"><div class="lcm-form-group"><textarea id="quickMessageInput" rows="5" style="width:100%"></textarea></div></form>\`,
-        buttons: {
-            send: {
-                icon: '',
-                label: game.i18n.localize('LANCER.Settings.Send'),
-                callback: (html) => resolve(html[0].querySelector('#quickMessageInput').value)
+(async () => {
+    const globalTypingSpeed = game.settings.get('lancer-communicator', 'globalTypingSpeed');
+    const defaultFontSize = game.settings.get('lancer-communicator', 'messageFontSize') || ${fontSize};
+    
+    const styleOptions = \`${styleOptions}\`;
+    
+    let result = await new Promise((resolve) => {
+        new Dialog({
+            title: "${escapedCharName}",
+            content: \`
+                <form class="lancer-communicator-dialog">
+                    <div class="lcm-form-group">
+                        <label>\${game.i18n.localize('LANCER.Settings.MessageText')}</label>
+                        <textarea id="quickMessageInput" rows="4" style="width:100%"></textarea>
+                    </div>
+                    <div class="lcm-form-group">
+                        <label>\${game.i18n.localize('LANCER.Settings.typingSpeed')} <small style="color:#999;">(\${game.i18n.localize('LANCER.Settings.globalTypingSpeed')}: \${globalTypingSpeed})</small></label>
+                        <div class="lcm-input-group" style="align-items:center;">
+                            <input type="checkbox" id="quick-use-global-speed" checked style="width:auto;margin-right:5px;">
+                            <label for="quick-use-global-speed" style="font-weight:normal;font-size:12px;margin-right:10px;">\${game.i18n.localize('LANCER.Settings.useGlobalSpeed')}</label>
+                        </div>
+                        <div class="lcm-input-group" id="quick-typing-speed-row" style="margin-top:5px;opacity:0.5;pointer-events:none;">
+                            <input type="range" id="quick-typing-speed-input" min="50" max="180" step="10" value="${typingSpeedArg !== 'null' ? typingSpeedArg : globalTypingSpeed}">
+                            <span id="quick-typing-speed-display">${typingSpeedArg !== 'null' ? typingSpeedArg : globalTypingSpeed}</span>
+                        </div>
+                    </div>
+                    <div class="lcm-form-group">
+                        <label>\${game.i18n.localize('LANCER.Settings.FontSize')}</label>
+                        <div class="lcm-input-group">
+                            <input type="range" id="quick-font-size-input" min="10" max="32" step="1" value="\${defaultFontSize}">
+                            <span id="quick-font-size-display">\${defaultFontSize}px</span>
+                        </div>
+                    </div>
+                    <div class="lcm-form-group">
+                        <label>\${game.i18n.localize('LANCER.Settings.MessageStyle')}</label>
+                        <select id="quick-style-select">\${styleOptions}</select>
+                    </div>
+                </form>
+            \`,
+            buttons: {
+                send: {
+                    icon: '',
+                    label: game.i18n.localize('LANCER.Settings.Send'),
+                    callback: (html) => {
+                        const form = html[0];
+                        const message = form.querySelector('#quickMessageInput').value;
+                        const useGlobalSpeed = form.querySelector('#quick-use-global-speed').checked;
+                        const typingSpeed = useGlobalSpeed ? null : Number(form.querySelector('#quick-typing-speed-input').value);
+                        const fontSize = Number(form.querySelector('#quick-font-size-input').value);
+                        const style = form.querySelector('#quick-style-select').value;
+                        resolve({ message, typingSpeed, fontSize, style });
+                    }
+                },
+                cancel: {
+                    icon: '',
+                    label: game.i18n.localize('LANCER.Settings.Cancel'),
+                    callback: () => resolve(null)
+                }
             },
-            cancel: {
-                icon: '',
-                label: game.i18n.localize('LANCER.Settings.Cancel'),
-                callback: () => resolve(null)
-            }
-        },
-        default: 'send',
-        close: () => resolve(null)
-    }).render(true);
-});
-if (messageText && messageText.trim()) {
-    game.modules.get('lancer-communicator').api.sendCommunicatorMessage(
-        "${characterName.replace(/"/g, '\\"')}",
-        "${portraitPath.replace(/"/g, '\\"')}",
-        messageText,
-        "${soundPath}",
-        "${voiceoverPath}",
-        "${style}",
-        ${fontSize},
-        "${fontFamily || ''}",
-        ${typingSpeedArg}
-    );
-}`;
+            default: 'send',
+            render: (html) => {
+                const dialog = html[0];
+                
+                // Обработчик чекбокса глобальной скорости
+                const useGlobalCheckbox = dialog.querySelector('#quick-use-global-speed');
+                const typingSpeedRow = dialog.querySelector('#quick-typing-speed-row');
+                const typingSpeedInput = dialog.querySelector('#quick-typing-speed-input');
+                const typingSpeedDisplay = dialog.querySelector('#quick-typing-speed-display');
+                
+                useGlobalCheckbox.addEventListener('change', () => {
+                    if (useGlobalCheckbox.checked) {
+                        typingSpeedRow.style.opacity = '0.5';
+                        typingSpeedRow.style.pointerEvents = 'none';
+                    } else {
+                        typingSpeedRow.style.opacity = '1';
+                        typingSpeedRow.style.pointerEvents = 'auto';
+                    }
+                });
+                
+                typingSpeedInput.addEventListener('input', () => {
+                    typingSpeedDisplay.textContent = typingSpeedInput.value;
+                });
+                
+                // Обработчик размера шрифта
+                const fontSizeInput = dialog.querySelector('#quick-font-size-input');
+                const fontSizeDisplay = dialog.querySelector('#quick-font-size-display');
+                fontSizeInput.addEventListener('input', () => {
+                    fontSizeDisplay.textContent = fontSizeInput.value + 'px';
+                });
+            },
+            close: () => resolve(null)
+        }).render(true);
+    });
+    
+    if (result && result.message && result.message.trim()) {
+        game.modules.get('lancer-communicator').api.sendCommunicatorMessage(
+            "${escapedCharName}",
+            "${escapedPortraitPath}",
+            result.message,
+            "${escapedSoundPath}",
+            "${escapedVoiceoverPath}",
+            result.style,
+            result.fontSize,
+            "${fontFamily || ''}",
+            result.typingSpeed
+        );
+    }
+})();`;
 
                         Macro.create({
                             name: macroName,

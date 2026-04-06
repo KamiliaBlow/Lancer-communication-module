@@ -69,6 +69,7 @@
             "NoVoiceoverForAuto": "Please select a voiceover file first for auto speed calculation!",
             "NoMessageForAuto": "Please enter message text first for auto speed calculation!",
             "AutoSpeedFailed": "Failed to load audio file for speed calculation",
+            "VoiceoverTooShort": "Voiceover file must be at least 3 seconds long!",
             "FileNotFound": "Selected file not found!",
             "MacroAlreadyExists": "A macro with this name already exists!"
         }
