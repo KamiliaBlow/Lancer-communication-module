@@ -4,6 +4,18 @@ import { registerAPI } from './api.js';
 
 const MODULE_NAME = 'lancer-communicator';
 
+/**
+ * Выводит отладочное сообщение в консоль, если включен режим дебага
+ * @param {string} message - Сообщение для вывода
+ * @param {...any} args - Дополнительные аргументы
+ */
+function debug(message, ...args) {
+    const debugMode = game.settings?.get(MODULE_NAME, 'debugMode') ?? false;
+    if (debugMode) {
+        console.log(`Lancer Communicator | DEBUG | ${message}`, ...args);
+    }
+}
+
 // ─── Инициализация модуля ──────────────────────────────────────
 
 Hooks.once('init', () => {
@@ -33,7 +45,7 @@ Hooks.once('init', () => {
             tokenControl.tools['communicator'] = {
                 ...toolConfig,
                 onChange: () => {
-                    console.log('Lancer Communicator | Button clicked (v13)');
+                    debug('Button clicked (v13)');
                     LancerCommunicator.openCommunicatorSettings();
                 }
             };
@@ -42,7 +54,7 @@ Hooks.once('init', () => {
                 tokenControl.tools.push({
                     ...toolConfig,
                     onClick: () => {
-                        console.log('Lancer Communicator | Button clicked (v12)');
+                        debug('Button clicked (v12)');
                         LancerCommunicator.openCommunicatorSettings();
                     }
                 });
@@ -60,8 +72,12 @@ Hooks.once('ready', () => {
     try {
         const fontSize = game.settings.get(MODULE_NAME, 'messageFontSize') || 14;
         const fontFamily = game.settings.get(MODULE_NAME, 'fontFamily') || 'MOSCOW2024';
+        const debugMode = game.settings.get(MODULE_NAME, 'debugMode') ?? false;
+
         document.documentElement.style.setProperty('--message-font-size', `${fontSize}px`);
         document.documentElement.style.setProperty('--message-font', fontFamily);
+
+        debug('Module ready', { fontSize, fontFamily, debugMode });
     } catch (error) {
         console.error('Lancer Communicator | Error applying CSS settings:', error);
         document.documentElement.style.setProperty('--message-font-size', '14px');

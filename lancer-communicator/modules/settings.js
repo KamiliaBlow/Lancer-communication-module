@@ -15,9 +15,9 @@ export function registerSettings() {
         default: true
     });
 
-    game.settings.register(MODULE, 'typingSpeed', {
-        name: game.i18n.localize('LANCER.Settings.typingSpeed'),
-        hint: game.i18n.localize('LANCER.Settings.typingSpeedHint'),
+    game.settings.register(MODULE, 'globalTypingSpeed', {
+        name: game.i18n.localize('LANCER.Settings.globalTypingSpeed'),
+        hint: game.i18n.localize('LANCER.Settings.globalTypingSpeedHint'),
         scope: 'world',
         config: true,
         type: Number,
@@ -55,6 +55,15 @@ export function registerSettings() {
         config: true,
         type: Boolean,
         default: true
+    });
+
+    game.settings.register(MODULE, 'debugMode', {
+        name: game.i18n.localize('LANCER.Settings.debugMode'),
+        hint: game.i18n.localize('LANCER.Settings.debugModeHint'),
+        scope: 'world',
+        config: true,
+        type: Boolean,
+        default: false
     });
 
     // ─── Настройки шрифтов ───────────────────────────────────────
@@ -127,5 +136,13 @@ export function registerSettings() {
         config: false,
         type: String,
         default: ''
+    });
+
+    game.settings.register(MODULE, 'lastTypingSpeed', {
+        name: 'Last Typing Speed',
+        scope: 'client',
+        config: false,
+        type: Number,
+        default: null
     });
 }

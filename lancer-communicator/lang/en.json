@@ -36,6 +36,13 @@
         "Create": "Create",
         "typingSpeed": "Typing Speed",
         "typingSpeedHint": "Delay between characters in the typewriter effect (higher = slower)",
+        "globalTypingSpeed": "Global Typing Speed",
+        "globalTypingSpeedHint": "Global delay between characters. Used when individual speed is not set.",
+        "useGlobalSpeed": "Use global",
+        "autoSpeed": "Auto",
+        "autoSpeedHint": "Automatically calculate typing speed based on voiceover duration and text length",
+        "debugMode": "Debug Mode",
+        "debugModeHint": "Enable debug messages in the browser console",
         "voiceVolume": "Voice Volume",
         "voiceVolumeHint": "Volume of the typing sound and voiceover",
         "FontFamily": "Font family",
@@ -59,6 +66,9 @@
             "NoCharacterName": "Please enter character name!",
             "NoPortrait": "Please select a portrait!",
             "NoMessage": "Please enter a message!",
+            "NoVoiceoverForAuto": "Please select a voiceover file first for auto speed calculation!",
+            "NoMessageForAuto": "Please enter message text first for auto speed calculation!",
+            "AutoSpeedFailed": "Failed to load audio file for speed calculation",
             "FileNotFound": "Selected file not found!",
             "MacroAlreadyExists": "A macro with this name already exists!"
         }

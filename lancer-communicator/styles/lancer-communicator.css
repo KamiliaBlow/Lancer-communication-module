@@ -164,15 +164,22 @@
     word-wrap: break-word;
 }
 
-/* Анимация растворения */
+/* Анимация схлопывания в центр */
 @keyframes tv-collapse {
-    0%   { opacity: 1; }
-    100% { opacity: 0; }
+    0%   {
+        opacity: 1;
+        transform: scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0);
+    }
 }
 
 #lancer-communicator-message.collapsing {
     animation: tv-collapse 3.0s ease-in forwards;
     pointer-events: none;
+    transform-origin: center center;
 }
 
 /* ─── Style: Green (default) ─────────────────────────────────── */
