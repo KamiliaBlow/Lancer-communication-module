@@ -10,7 +10,7 @@
 
 @font-face {
     font-family: 'TeletactileRus';
-    src: url('fonts/TeletactileRus.ttf') format('opentype');
+    src: url('fonts/TeletactileRus.ttf') format('truetype');
 }
 
 @font-face {
@@ -18,10 +18,14 @@
     src: url('fonts/Kereru.otf') format('opentype');
 }
 
+/* ─── CSS Variables ──────────────────────────────────────────── */
+
 :root {
     --message-font-size: 14px;
     --message-font: 'MOSCOW2024';
 }
+
+/* ─── Dialog Form ────────────────────────────────────────────── */
 
 .lancer-communicator-dialog .lcm-form-group {
     margin-bottom: 10px;
@@ -40,26 +44,14 @@
     padding: 5px;
     border-radius: 4px;
     max-height: 200px;
-    resize: vertical; /* Разрешаем только вертикальное растягивание */
+    resize: vertical;
     overflow-y: auto;
 }
 
 .lancer-communicator-dialog .lcm-input-group {
     display: flex;
     align-items: center;
-    gap: 5px; 
-}
-
-.lancer-communicator-dialog .lcm-input-group button {
-    height: 26px; /* Точно такая же высота как у инпута */
-    padding: 0 10px;
-    color: black;
-    cursor: pointer;
-    font-size: 12px;
-    white-space: nowrap; /* Запрещает перенос текста */
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    gap: 10px;
 }
 
 .lancer-communicator-dialog .lcm-input-group input {
@@ -67,10 +59,16 @@
     height: 26px;
 }
 
-.lancer-communicator-dialog .lcm-input-group {
+.lancer-communicator-dialog .lcm-input-group button {
+    height: 26px;
+    padding: 0 10px;
+    color: black;
+    cursor: pointer;
+    font-size: 12px;
+    white-space: nowrap;
     display: flex;
     align-items: center;
-    gap: 10px;
+    justify-content: center;
 }
 
 .lancer-communicator-dialog input[type="range"] {
@@ -81,6 +79,14 @@
     width: 50px;
     text-align: right;
 }
+
+.lancer-communicator-dialog .lcm-hint {
+    display: block;
+    margin-top: 4px;
+    color: #aaa;
+}
+
+/* ─── Message Container (Base) ───────────────────────────────── */
 
 #lancer-communicator-message.top-screen {
     position: fixed;
@@ -93,15 +99,14 @@
 }
 
 #lancer-communicator-message .lcm-communicator-container {
-    width: 100%; /* Изменил на 100% */ 
+    width: 100%;
     margin: 0 auto;
     background-color: rgba(0, 0, 0, 0.8);
-    color: green;
     display: flex;
-    align-items: flex-start; /* Выравнивание по вертикали */
-    justify-content: flex-start; /* Выравнивание по левому краю */
+    align-items: flex-start;
+    justify-content: flex-start;
     padding: 10px;
-    position: relative; /* Для абсолютного позиционирования курсора */
+    position: relative;
 }
 
 #lancer-communicator-message .lcm-portrait-container {
@@ -109,8 +114,8 @@
     flex-direction: column;
     align-items: center;
     margin-right: 10px;
-    width: 90px; /* Фиксированная ширина */
-    flex-shrink: 0; /* Запрещаем уменьшение контейнера */
+    width: 90px;
+    flex-shrink: 0;
 }
 
 #lancer-communicator-message .lcm-portrait {
@@ -118,14 +123,15 @@
     height: 90px;
     object-fit: cover;
     border-radius: 5px;
-    flex-shrink: 0; /* Запрещаем уменьшение аватарки */
+    flex-shrink: 0;
+    backdrop-filter: blur(5px);
 }
 
 #lancer-communicator-message .lcm-message-text {
-    font-size: var(--message-font-size, 14px) !important; 
+    font-size: var(--message-font-size, 14px) !important;
     flex-grow: 1;
     word-wrap: break-word;
-    text-align: left; /* Выравнивание текста по левому краю */
+    text-align: left;
 }
 
 #lancer-communicator-message .lcm-message-text,
@@ -133,12 +139,12 @@
     font-family: var(--message-font, 'MOSCOW2024'), monospace;
 }
 
+/* Мигающий курсор */
 #lancer-communicator-message .lcm-message-text::after {
     content: '|';
     display: inline-block;
     animation: blink 0.7s infinite;
     margin-left: 2px;
-    color: green;
 }
 
 @keyframes blink {
@@ -146,196 +152,106 @@
     50% { opacity: 1; }
 }
 
-#lancer-communicator-message, .lcm-portrait {
-    border: 1px solid #03FB8D;
-    box-shadow: 0 0 15px rgba(3, 251, 141, 0.8);
-    backdrop-filter: blur(5px);
-}
-
-@keyframes tv-collapse {
-    0% {
-        transform: scale(1);
-        opacity: 1;
-    }
-    50% {
-        transform: scale(0.5);
-        opacity: 0.7;
-    }
-    100% {
-        transform: scale(0);
-        opacity: 0;
-    }
-}
-
-#lancer-communicator-message.collapsing {
-    animation: tv-collapse 5.0s ease-in forwards;
-    transform-origin: center;
-}
-
+/* Имя персонажа */
 #lancer-communicator-message .lcm-character-name {
-    font-family: var(--message-font, 'MOSCOW2024'), monospace;
-	font-size: 20px;
+    font-size: 20px;
     color: #03FB8D;
     text-align: center;
     margin-top: 5px;
     text-transform: uppercase;
     width: 100%;
-    max-width: 80px; /* Максимальная ширина как у аватарки */
-    word-wrap: break-word; /* Перенос слов */
+    max-width: 80px;
+    word-wrap: break-word;
 }
 
-/* Базовый стиль */
+/* Анимация растворения */
+@keyframes tv-collapse {
+    0%   { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+#lancer-communicator-message.collapsing {
+    animation: tv-collapse 3.0s ease-in forwards;
+    pointer-events: none;
+}
+
+/* ─── Style: Green (default) ─────────────────────────────────── */
+
 #lancer-communicator-message.style-green {
     border: 1px solid #03FB8D;
     box-shadow: 0 0 15px rgba(3, 251, 141, 0.8);
     background-color: rgba(0, 255, 0, 0.1);
-    border-color: green;
     color: green;
 }
 
-/* Синий стиль */
+#lancer-communicator-message.style-green .lcm-portrait {
+    border: 1px solid #03FB8D;
+    box-shadow: 0 0 10px rgba(3, 251, 141, 0.5);
+}
+
+#lancer-communicator-message.style-green .lcm-message-text::after {
+    color: green;
+}
+
+/* ─── Style: Blue ────────────────────────────────────────────── */
+
 #lancer-communicator-message.style-blue {
     border: 1px solid #00A4FF;
     box-shadow: 0 0 15px rgba(0, 164, 255, 0.8);
     background-color: rgba(0, 0, 255, 0.1);
-    border-color: blue;
     color: #00A4FF;
 }
-#lancer-communicator-message.style-blue .lcm-message-text {
-    color: #00A4FF;
-}
-#lancer-communicator-message.style-blue .lcm-character-name {
-    color: #00A4FF;
-}
+
+#lancer-communicator-message.style-blue .lcm-message-text { color: #00A4FF; }
+#lancer-communicator-message.style-blue .lcm-character-name { color: #00A4FF; }
 #lancer-communicator-message.style-blue .lcm-portrait {
     border-color: #00A4FF;
     box-shadow: 0 0 10px rgba(0, 164, 255, 0.5);
 }
-#lancer-communicator-message.style-blue .lcm-message-text::after {
-    color: #00A4FF;
-}
+#lancer-communicator-message.style-blue .lcm-message-text::after { color: #00A4FF; }
 
-/* Желтый стиль */
+/* ─── Style: Yellow ──────────────────────────────────────────── */
+
 #lancer-communicator-message.style-yellow {
     border: 1px solid #FFD700;
     box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
     background-color: rgba(255, 255, 0, 0.1);
-    border-color: yellow;
     color: #FFD700;
 }
-#lancer-communicator-message.style-yellow .lcm-message-text {
-    color: #FFD700;
-}
-#lancer-communicator-message.style-yellow .lcm-character-name {
-    color: #FFD700;
-}
+
+#lancer-communicator-message.style-yellow .lcm-message-text { color: #FFD700; }
+#lancer-communicator-message.style-yellow .lcm-character-name { color: #FFD700; }
 #lancer-communicator-message.style-yellow .lcm-portrait {
     border-color: #FFD700;
     box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
 }
-#lancer-communicator-message.style-yellow .lcm-message-text::after {
-    color: #FFD700;
-}
+#lancer-communicator-message.style-yellow .lcm-message-text::after { color: #FFD700; }
 
-/* Красный стиль */
+/* ─── Style: Red ─────────────────────────────────────────────── */
+
 #lancer-communicator-message.style-red {
     border: 1px solid #FF0000;
     box-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
     background-color: rgba(255, 0, 0, 0.1);
-    border-color: red;
     color: #FF0000;
 }
-#lancer-communicator-message.style-red .lcm-message-text {
-    color: #FF0000;
-}
-#lancer-communicator-message.style-red .lcm-character-name {
-    color: #FF0000;
-}
+
+#lancer-communicator-message.style-red .lcm-message-text { color: #FF0000; }
+#lancer-communicator-message.style-red .lcm-character-name { color: #FF0000; }
 #lancer-communicator-message.style-red .lcm-portrait {
     border-color: #FF0000;
     box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
 }
-#lancer-communicator-message.style-red .lcm-message-text::after {
-    color: #FF0000;
-}
+#lancer-communicator-message.style-red .lcm-message-text::after { color: #FF0000; }
 
-/* Поврежденный стиль с анимацией */
+/* ─── Style: Damaged / Glitch ────────────────────────────────── */
+
 #lancer-communicator-message.style-damaged {
-    border: 1px solid darkred;
+    border: 2px solid darkred;
     box-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
     color: darkred;
     background-color: rgba(128, 0, 0, 0.1);
-    border-color: maroon;
     animation: glitch-damage 0.3s forwards;
-}
-#lancer-communicator-message.style-damaged .lcm-message-text {
-    color: darkred;
-    text-shadow: 2px 2px 4px rgba(255, 0, 0, 0.5);
-}
-#lancer-communicator-message.style-damaged .lcm-character-name {
-    color: darkred;
-    text-shadow: 1px 1px 2px rgba(255, 0, 0, 0.5);
-}
-#lancer-communicator-message.style-damaged .lcm-portrait {
-    border-color: darkred;
-    box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
-    transform: skew(-5deg);
-}
-#lancer-communicator-message.style-damaged .lcm-message-text::after {
-    color: darkred;
-}
-
-@keyframes glitchOut {
-    0% { opacity: 1; transform: scale(1); }
-    100% { opacity: 0; transform: scale(0.95); }
-}
-
-.lcm-communicator-container.style-damaged.collapsing {
-    animation: glitchOut 5.0s ease-out forwards;
-}
-
-@keyframes shake-border {
-    0%, 100% { transform: translate(0, 0) rotate(0deg); }
-    10% { transform: translate(-1px, 1px) rotate(-0.5deg); }
-    20% { transform: translate(1px, -1px) rotate(0.5deg); }
-    30% { transform: translate(-1px, 0) rotate(-0.3deg); }
-    40% { transform: translate(1px, 0) rotate(0.3deg); }
-    50% { transform: translate(0, 1px) rotate(0.2deg); }
-    60% { transform: translate(0, -1px) rotate(-0.2deg); }
-}
-
-@keyframes lcm-portrait-shake {
-    0%, 100% { 
-        transform: translate(0, 0) rotate(0deg) scale(1);
-    }
-    25% { 
-        transform: translate(-2px, 1px) rotate(-0.5deg) scale(1.02);
-    }
-    50% { 
-        transform: translate(2px, -1px) rotate(0.5deg) scale(0.98);
-    }
-    75% { 
-        transform: translate(-1px, 2px) rotate(0.3deg) scale(1.01);
-    }
-}
-
-@keyframes text-glitch {
-    0%, 100% { 
-        transform: translate(0, 0);
-        text-shadow: none;
-    }
-    25% { 
-        transform: translate(-2px, -2px);
-        text-shadow: 2px 2px 0 rgba(255, 0, 0, 0.3);
-    }
-    50% { 
-        transform: translate(2px, 2px);
-        text-shadow: -2px -2px 0 rgba(0, 0, 255, 0.3);
-    }
-    75% { 
-        transform: translate(-2px, 2px);
-        text-shadow: 2px -2px 0 rgba(0, 255, 0, 0.3);
-    }
 }
 
 #lancer-communicator-message.style-damaged .lcm-communicator-container {
@@ -345,23 +261,24 @@
 }
 
 #lancer-communicator-message.style-damaged .lcm-message-text {
+    color: #FF4444;
+    text-shadow: 2px 2px 4px rgba(255, 0, 0, 0.5);
     position: relative;
     animation: text-glitch 0.6s infinite;
-    color: #FF4444;
 }
 
 #lancer-communicator-message.style-damaged .lcm-character-name {
-    animation: text-glitch 0.6s infinite alternate;
     color: #FF2222;
+    text-shadow: 1px 1px 2px rgba(255, 0, 0, 0.5);
+    animation: text-glitch 0.6s infinite alternate;
 }
 
 #lancer-communicator-message.style-damaged .lcm-portrait {
+    border-color: darkred;
+    box-shadow: 0 0 5px rgba(255, 0, 0, 0.3), 1px 1px 3px rgba(255, 0, 0, 0.2);
+    transform: skew(-5deg);
     animation: lcm-portrait-shake 0.30s infinite;
-    filter: 
-        contrast(120%) 
-        brightness(110%);    box-shadow: 
-        0 0 5px rgba(255, 0, 0, 0.3),
-        1px 1px 3px rgba(255, 0, 0, 0.2);
+    filter: contrast(120%) brightness(110%);
     transform-origin: center;
     transition: all 0.1s ease;
 }
@@ -370,36 +287,74 @@
     animation-play-state: paused;
 }
 
+#lancer-communicator-message.style-damaged .lcm-message-text::after {
+    color: darkred;
+}
+
+@keyframes glitchOut {
+    0%   { opacity: 1;   transform: scale(1);    }
+    100% { opacity: 0;   transform: scale(0.95); }
+}
+
+.lcm-communicator-container.style-damaged.collapsing {
+    animation: glitchOut 5.0s ease-out forwards;
+}
+
+/* ─── Style: Undertale ───────────────────────────────────────── */
+
 #lancer-communicator-message.style-undertale {
     border: 2px solid white;
     box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
     background-color: rgba(0, 0, 0, 0.95);
     color: white;
 }
-#lancer-communicator-message.style-undertale .lcm-message-text {
-    color: white;
-}
-#lancer-communicator-message.style-undertale .lcm-character-name {
-    color: white;
-}
+
+#lancer-communicator-message.style-undertale .lcm-message-text { color: white; }
+#lancer-communicator-message.style-undertale .lcm-character-name { color: white; }
 #lancer-communicator-message.style-undertale .lcm-portrait {
     border-color: white;
     box-shadow: 0 0 10px rgba(255, 255, 0, 0.5);
 }
-#lancer-communicator-message.style-undertale .lcm-message-text::after {
-    color: white;
+#lancer-communicator-message.style-undertale .lcm-message-text::after { color: white; }
+
+/* ─── Glitch / Shake Animations ──────────────────────────────── */
+
+@keyframes shake-border {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    10%  { transform: translate(-1px, 1px) rotate(-0.5deg); }
+    20%  { transform: translate(1px, -1px) rotate(0.5deg); }
+    30%  { transform: translate(-1px, 0) rotate(-0.3deg); }
+    40%  { transform: translate(1px, 0) rotate(0.3deg); }
+    50%  { transform: translate(0, 1px) rotate(0.2deg); }
+    60%  { transform: translate(0, -1px) rotate(-0.2deg); }
 }
 
+@keyframes lcm-portrait-shake {
+    0%, 100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+    25%  { transform: translate(-2px, 1px) rotate(-0.5deg) scale(1.02); }
+    50%  { transform: translate(2px, -1px) rotate(0.5deg) scale(0.98); }
+    75%  { transform: translate(-1px, 2px) rotate(0.3deg) scale(1.01); }
+}
+
+@keyframes text-glitch {
+    0%, 100% { transform: translate(0, 0); text-shadow: none; }
+    25%  { transform: translate(-2px, -2px); text-shadow: 2px 2px 0 rgba(255, 0, 0, 0.3); }
+    50%  { transform: translate(2px, 2px); text-shadow: -2px -2px 0 rgba(0, 0, 255, 0.3); }
+    75%  { transform: translate(-2px, 2px); text-shadow: 2px -2px 0 rgba(0, 255, 0, 0.3); }
+}
+
+/* ─── Text Shake (Uppercase animation) ───────────────────────── */
+
 @keyframes lcm-shake-text {
-    0% { transform: translateX(0) translateY(0); }
-    25% { transform: translateX(-2px) translateY(1px); }
-    50% { transform: translateX(2px) translateY(-1px); }
-    75% { transform: translateX(-1px) translateY(-1px); }
+    0%   { transform: translateX(0) translateY(0); }
+    25%  { transform: translateX(-2px) translateY(1px); }
+    50%  { transform: translateX(2px) translateY(-1px); }
+    75%  { transform: translateX(-1px) translateY(-1px); }
     100% { transform: translateX(0) translateY(0); }
 }
 
 .lcm-shake-text {
     display: inline-block;
     animation: lcm-shake-text 0.15s infinite;
-    color: inherit; /* Наследуем цвет */
+    color: inherit;
 }

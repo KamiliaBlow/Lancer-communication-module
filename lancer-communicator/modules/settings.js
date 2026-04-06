@@ -1,56 +1,75 @@
-// Модуль для настроек
+/**
+ * Модуль регистрации настроек Lancer Communicator
+ */
 export function registerSettings() {
-    // Настройка для определения, могут ли игроки использовать коммуникатор
-    game.settings.register('lancer-communicator', 'allowPlayersAccess', {
-        name: game.i18n.localize("LANCER.Settings.AllowPlayersAccess"),
-        hint: "Разрешает игрокам использовать функции коммуникатора",
+    const MODULE = 'lancer-communicator';
+
+    // ─── Настройки для пользователей ─────────────────────────────
+
+    game.settings.register(MODULE, 'allowPlayersAccess', {
+        name: game.i18n.localize('LANCER.Settings.AllowPlayersAccess'),
+        hint: game.i18n.localize('LANCER.Settings.AllowPlayersAccessHint'),
         scope: 'world',
         config: true,
         type: Boolean,
         default: true
     });
-    
-    // Настройка для скорости печати
-    game.settings.register('lancer-communicator', 'typingSpeed', {
-        name: game.i18n.localize("LANCER.Settings.typingSpeed"),
+
+    game.settings.register(MODULE, 'typingSpeed', {
+        name: game.i18n.localize('LANCER.Settings.typingSpeed'),
+        hint: game.i18n.localize('LANCER.Settings.typingSpeedHint'),
         scope: 'world',
         config: true,
         type: Number,
-        range: {
-            min: 50,
-            max: 180,
-            step: 10
-        },
+        range: { min: 50, max: 180, step: 10 },
         default: 130
     });
-    
-    // Настройка для громкости звука
-    game.settings.register('lancer-communicator', 'voiceVolume', {
-        name: game.i18n.localize("LANCER.Settings.voiceVolume"),
+
+    game.settings.register(MODULE, 'voiceVolume', {
+        name: game.i18n.localize('LANCER.Settings.voiceVolume'),
+        hint: game.i18n.localize('LANCER.Settings.voiceVolumeHint'),
         scope: 'world',
         config: true,
         type: Number,
-        range: {
-            min: 0.1,
-            max: 1.0,
-            step: 0.05
-        },
+        range: { min: 0.1, max: 1.0, step: 0.05 },
         default: 0.3
     });
-	
-    // Выбранное семейство шрифтов
-    game.settings.register('lancer-communicator', 'fontFamily', {
-        name: game.i18n.localize("LANCER.Settings.FontFamily") || "Font Family",
-        hint: game.i18n.localize("LANCER.Settings.FontFamilyHint") || "The font used for messages",
-        scope: "client",
+
+    game.settings.register(MODULE, 'messageFontSize', {
+        name: game.i18n.localize('LANCER.Settings.FontSize'),
+        hint: game.i18n.localize('LANCER.Settings.FontSizeHint'),
+        scope: 'world',
+        config: true,
+        type: Number,
+        range: { min: 10, max: 32, step: 1 },
+        default: 14,
+        onChange: (value) => {
+            document.documentElement.style.setProperty('--message-font-size', `${value}px`);
+        }
+    });
+
+    game.settings.register(MODULE, 'enableTextShake', {
+        name: game.i18n.localize('LANCER.Settings.EnableTextShake'),
+        hint: game.i18n.localize('LANCER.Settings.EnableTextShakeHint'),
+        scope: 'world',
+        config: true,
+        type: Boolean,
+        default: true
+    });
+
+    // ─── Настройки шрифтов ───────────────────────────────────────
+
+    game.settings.register(MODULE, 'fontFamily', {
+        name: game.i18n.localize('LANCER.Settings.FontFamily'),
+        hint: game.i18n.localize('LANCER.Settings.FontFamilyHint'),
+        scope: 'client',
         config: false,
         type: String,
-        default: "MOSCOW2024"
+        default: 'MOSCOW2024'
     });
-    
-    // Настройка для шрифта сообщений
-    game.settings.register('lancer-communicator', 'communicatorFont', {
-        name: game.i18n.localize("LANCER.Settings.FontSelect"),
+
+    game.settings.register(MODULE, 'communicatorFont', {
+        name: game.i18n.localize('LANCER.Settings.FontSelect'),
         scope: 'world',
         config: false,
         type: String,
@@ -58,86 +77,55 @@ export function registerSettings() {
             'MOSCOW2024': 'MOSCOW2024',
             'Undertale': 'Undertale',
             'TeletactileRus': 'TeletactileRus',
-            'monospace': 'Monospace',
             'Kereru': 'Kereru',
-            'serif': 'Serif',
-            'sans-serif': 'Sans-serif'
+            'Serif': 'Serif',
+            'Sans-serif': 'Sans-serif'
         },
         default: 'MOSCOW2024',
-        onChange: value => {
+        onChange: (value) => {
             document.documentElement.style.setProperty('--message-font', value);
         }
     });
-    
-    // Настройка для размера шрифта сообщений
-    game.settings.register('lancer-communicator', 'messageFontSize', {
-        name: game.i18n.localize("LANCER.Settings.FontSize"),
-        scope: 'world',
-        config: true,
-        type: Number,
-        range: {
-            min: 10,
-            max: 32,
-            step: 1
-        },
-        default: 14,
-        onChange: value => {
-            document.documentElement.style.setProperty('--message-font-size', `${value}px`);
-        }
-    });
 
-    // Сохранение последнего выбранного портрета
-    game.settings.register('lancer-communicator', 'lastPortrait', {
-        name: game.i18n.localize("LANCER.Settings.currentPortrait"),
+    // ─── Клиентские сохранённые значения ─────────────────────────
+
+    game.settings.register(MODULE, 'lastPortrait', {
+        name: game.i18n.localize('LANCER.Settings.currentPortrait'),
         scope: 'client',
         config: false,
         type: String,
         default: ''
     });
 
-    // Сохранение последнего выбранного звука
-    game.settings.register('lancer-communicator', 'lastSound', {
-        name: game.i18n.localize("LANCER.Settings.currentSound"),
+    game.settings.register(MODULE, 'lastSound', {
+        name: game.i18n.localize('LANCER.Settings.currentSound'),
         scope: 'client',
         config: false,
         type: String,
         default: ''
     });
 
-    // Сохранение последнего имени персонажа
-    game.settings.register('lancer-communicator', 'lastCharacterName', {
-        name: game.i18n.localize("LANCER.Settings.lastCharacterName"),
+    game.settings.register(MODULE, 'lastCharacterName', {
+        name: game.i18n.localize('LANCER.Settings.lastCharacterName'),
         scope: 'client',
         config: false,
         type: String,
         default: ''
     });
 
-    // Сохранение последнего выбранного стиля сообщения
-    game.settings.register('lancer-communicator', 'lastMessageStyle', {
-        name: game.i18n.localize("LANCER.Settings.lastMessageStyle"),
+    game.settings.register(MODULE, 'lastMessageStyle', {
+        name: game.i18n.localize('LANCER.Settings.lastMessageStyle'),
         scope: 'client',
         config: false,
         type: String,
         default: 'green'
     });
-	
-    // Сохранение последнего выбранного файла озвучки
-    game.settings.register('lancer-communicator', 'lastVoiceover', {
-        name: game.i18n.localize("LANCER.Settings.lastVoiceover"),
+
+    game.settings.register(MODULE, 'lastVoiceover', {
+        name: game.i18n.localize('LANCER.Settings.lastVoiceover'),
         scope: 'client',
         config: false,
         type: String,
         default: ''
     });
-	
-    game.settings.register('lancer-communicator', 'enableTextShake', {
-    name: game.i18n.localize("LANCER.Settings.EnableTextShake") || "Enable Text Shake",
-    hint: game.i18n.localize("LANCER.Settings.EnableTextShakeHint") || "Toggle shaking animation for uppercase or emphasized text",
-    scope: 'world',
-    config: true,
-    type: Boolean,
-    default: true
-});
 }
-
