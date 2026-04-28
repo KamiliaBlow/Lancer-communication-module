@@ -6,6 +6,15 @@ export function registerSettings() {
 
     // ─── Настройки для пользователей ─────────────────────────────
 
+    game.settings.register(MODULE, 'postToChat', {
+        name: game.i18n.localize('LANCER.Settings.PostToChat'),
+        hint: game.i18n.localize('LANCER.Settings.PostToChatHint'),
+        scope: 'world',
+        config: true,
+        type: Boolean,
+        default: true
+    });
+
     game.settings.register(MODULE, 'allowPlayersAccess', {
         name: game.i18n.localize('LANCER.Settings.AllowPlayersAccess'),
         hint: game.i18n.localize('LANCER.Settings.AllowPlayersAccessHint'),

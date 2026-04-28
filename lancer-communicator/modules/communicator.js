@@ -688,6 +688,95 @@ export class LancerCommunicator {
             type: 'showMessage',
             data: messageData
         });
+        this._postToChat(messageData);
+    }
+
+    /**
+     * Отправляет копию сообщения коммуникатора в чат Foundry
+     * @param {Object} data - Данные сообщения
+     */
+    static async _postToChat(data) {
+        const enabled = game.settings.get('lancer-communicator', 'postToChat');
+        if (!enabled) return;
+
+        const { characterName, portraitPath, message, style, fontFamily } = data;
+
+        const stylePresets = {
+            green: {
+                nameColor: '#03FB8D', textColor: 'green',
+                border: '1px solid #03FB8D',
+                shadow: '0 0 15px rgba(3,251,141,0.8)',
+                bg: 'rgba(0,255,0,0.1)',
+                portraitBorder: '1px solid #03FB8D',
+                portraitShadow: '0 0 10px rgba(3,251,141,0.5)'
+            },
+            blue: {
+                nameColor: '#00A4FF', textColor: '#00A4FF',
+                border: '1px solid #00A4FF',
+                shadow: '0 0 15px rgba(0,164,255,0.8)',
+                bg: 'rgba(0,0,255,0.1)',
+                portraitBorder: '1px solid #00A4FF',
+                portraitShadow: '0 0 10px rgba(0,164,255,0.5)'
+            },
+            yellow: {
+                nameColor: '#FFD700', textColor: '#FFD700',
+                border: '1px solid #FFD700',
+                shadow: '0 0 15px rgba(255,215,0,0.8)',
+                bg: 'rgba(255,255,0,0.1)',
+                portraitBorder: '1px solid #FFD700',
+                portraitShadow: '0 0 10px rgba(255,215,0,0.5)'
+            },
+            red: {
+                nameColor: '#FF0000', textColor: '#FF0000',
+                border: '1px solid #FF0000',
+                shadow: '0 0 15px rgba(255,0,0,0.8)',
+                bg: 'rgba(255,0,0,0.1)',
+                portraitBorder: '1px solid #FF0000',
+                portraitShadow: '0 0 10px rgba(255,0,0,0.5)'
+            },
+            damaged: {
+                nameColor: '#FF2222', textColor: '#FF4444',
+                border: '2px solid darkred',
+                shadow: '0 0 15px rgba(255,0,0,0.8)',
+                bg: 'rgba(128,0,0,0.1)',
+                portraitBorder: '2px solid darkred',
+                portraitShadow: '0 0 5px rgba(255,0,0,0.3), 1px 1px 3px rgba(255,0,0,0.2)',
+                nameShadow: '1px 1px 2px rgba(255,0,0,0.5)',
+                textShadow: '2px 2px 4px rgba(255,0,0,0.5)'
+            },
+            undertale: {
+                nameColor: 'white', textColor: 'white',
+                border: '2px solid white',
+                shadow: '0 0 10px rgba(255,255,255,0.5)',
+                bg: 'rgba(0,0,0,0.95)',
+                portraitBorder: '2px solid white',
+                portraitShadow: '0 0 10px rgba(255,255,0,0.5)'
+            }
+        };
+
+        const p = stylePresets[style] || stylePresets.green;
+        const font = fontFamily || this.settings.fontFamily;
+        const isDamaged = style === 'damaged';
+        const nameShadow = p.nameShadow ? `text-shadow:${p.nameShadow};` : '';
+        const textShadow = p.textShadow ? `text-shadow:${p.textShadow};` : '';
+
+        const content = `<div class="lcm-chat-card${isDamaged ? ' style-damaged' : ''}" style="border:${p.border};box-shadow:${p.shadow};background:linear-gradient(${p.bg},${p.bg}),rgba(0,0,0,0.8);border-radius:5px;padding:8px;display:flex;align-items:flex-start;gap:10px;">
+            <img src="${this._escapeHtml(portraitPath)}" style="width:50px;height:50px;object-fit:cover;border-radius:5px;border:${p.portraitBorder};box-shadow:${p.portraitShadow};flex-shrink:0;${isDamaged ? 'transform:skew(-5deg);filter:contrast(120%) brightness(110%);' : ''}" alt="${this._escapeHtml(characterName)}">
+            <div style="flex-grow:1;min-width:0;">
+                <div class="lcm-chat-name" style="font-size:20px;font-weight:bold;color:${p.nameColor};${nameShadow}margin-bottom:4px;text-transform:uppercase;font-family:'${font}',monospace;">${this._escapeHtml(characterName)}</div>
+                <div class="lcm-chat-text" style="color:${p.textColor};${textShadow}font-size:14px;word-wrap:break-word;white-space:pre-wrap;font-family:'${font}',monospace;">${this._escapeHtml(message)}</div>
+            </div>
+        </div>`;
+
+        try {
+            await ChatMessage.create({
+                content,
+                speaker: { alias: characterName }
+            });
+            this.debug('Chat message posted');
+        } catch (error) {
+            console.error('Lancer Communicator | Failed to post chat message:', error);
+        }
     }
 
     /**

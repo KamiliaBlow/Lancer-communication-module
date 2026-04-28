@@ -55,6 +55,8 @@
         "EnterPortraitURL": "Enter image URL or path",
         "SelectFromLibrary": "Select from library",
         "PortraitHint": "You can paste a direct image URL (e.g. from Imgur) or select a file from your Foundry library.",
+        "PostToChat": "Post to Chat",
+        "PostToChatHint": "After sending, the communicator message is duplicated to the Foundry chat log so players who missed it can read it",
         "AllowPlayersAccess": "Allow Players to Access Communicator",
         "AllowPlayersAccessHint": "If enabled, players will see the Communicator button in token tools",
         "Notifications": {
