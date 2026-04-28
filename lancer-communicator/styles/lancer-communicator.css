@@ -378,41 +378,19 @@
 }
 
 #chat-log .lcm-chat-card.style-damaged {
-    animation: lcm-chat-glitch 0.3s forwards;
+    animation: shake-border 0.7s infinite;
 }
 
 #chat-log .lcm-chat-card.style-damaged .lcm-chat-name {
-    animation: lcm-chat-name-glitch 0.6s infinite alternate;
+    animation: text-glitch 0.6s infinite alternate;
 }
 
 #chat-log .lcm-chat-card.style-damaged .lcm-chat-text {
-    animation: lcm-chat-text-glitch 0.6s infinite;
+    animation: text-glitch 0.6s infinite;
 }
 
 #chat-log .lcm-chat-card.style-damaged img {
     animation: lcm-chat-portrait-glitch 0.30s infinite;
-}
-
-@keyframes lcm-chat-glitch {
-    0%   { opacity: 1; transform: scale(1); }
-    25%  { opacity: 0.9; transform: translate(-1px, 1px) skew(0.5deg); }
-    50%  { opacity: 0.95; transform: translate(1px, -1px) skew(-0.5deg); }
-    75%  { opacity: 0.9; transform: translate(-1px, 0) skew(0.3deg); }
-    100% { opacity: 1; transform: scale(1) skew(0deg); }
-}
-
-@keyframes lcm-chat-name-glitch {
-    0%, 100% { transform: translate(0, 0); }
-    25%  { transform: translate(-1px, -1px); }
-    50%  { transform: translate(1px, 1px); }
-    75%  { transform: translate(-1px, 1px); }
-}
-
-@keyframes lcm-chat-text-glitch {
-    0%, 100% { transform: translate(0, 0); }
-    25%  { transform: translate(-2px, -2px); text-shadow: 2px 2px 0 rgba(255,0,0,0.3); }
-    50%  { transform: translate(2px, 2px); text-shadow: -2px -2px 0 rgba(0,0,255,0.3); }
-    75%  { transform: translate(-2px, 2px); text-shadow: 2px -2px 0 rgba(0,255,0,0.3); }
 }
 
 @keyframes lcm-chat-portrait-glitch {
