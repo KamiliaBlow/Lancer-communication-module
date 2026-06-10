@@ -24,6 +24,15 @@ export function registerSettings() {
         default: true
     });
 
+    game.settings.register(MODULE, 'allowPlayersExport', {
+        name: game.i18n.localize('LANCER.Settings.AllowPlayersExport'),
+        hint: game.i18n.localize('LANCER.Settings.AllowPlayersExportHint'),
+        scope: 'world',
+        config: true,
+        type: Boolean,
+        default: false
+    });
+
     game.settings.register(MODULE, 'globalTypingSpeed', {
         name: game.i18n.localize('LANCER.Settings.globalTypingSpeed'),
         hint: game.i18n.localize('LANCER.Settings.globalTypingSpeedHint'),
@@ -54,6 +63,20 @@ export function registerSettings() {
         default: 14,
         onChange: (value) => {
             document.documentElement.style.setProperty('--message-font-size', `${value}px`);
+        }
+    });
+
+    game.settings.register(MODULE, 'globalMessageWidth', {
+        name: game.i18n.localize('LANCER.Settings.globalMessageWidth'),
+        hint: game.i18n.localize('LANCER.Settings.globalMessageWidthHint'),
+        scope: 'world',
+        config: true,
+        type: Number,
+        range: { min: 20, max: 90, step: 5 },
+        default: 40,
+        onChange: (value) => {
+            document.documentElement.style.setProperty('--message-width', `${value}%`);
+            document.documentElement.style.setProperty('--message-left', `${(100 - value) / 2}%`);
         }
     });
 
@@ -93,6 +116,11 @@ export function registerSettings() {
         type: String,
         choices: {
             'MOSCOW2024': 'MOSCOW2024',
+            'Orbitron': 'Orbitron',
+            'Share Tech Mono': 'Share Tech Mono',
+            'Chakra Petch': 'Chakra Petch',
+            'Space Mono': 'Space Mono',
+            'Handjet': 'Handjet',
             'Undertale': 'Undertale',
             'TeletactileRus': 'TeletactileRus',
             'Kereru': 'Kereru',
@@ -149,6 +177,14 @@ export function registerSettings() {
 
     game.settings.register(MODULE, 'lastTypingSpeed', {
         name: 'Last Typing Speed',
+        scope: 'client',
+        config: false,
+        type: Number,
+        default: null
+    });
+
+    game.settings.register(MODULE, 'lastMessageWidth', {
+        name: 'Last Message Box Width',
         scope: 'client',
         config: false,
         type: Number,
