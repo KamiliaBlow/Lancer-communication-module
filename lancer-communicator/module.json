@@ -4,7 +4,7 @@
     "title": "Lancer Communicator",
     "description": "NPC Communicator for Lancer RPG | Коммуникатор NPC для Lancer RPG",
     "version": "0.7.0.1",
-	"languages": [
+    "languages": [
         {
             "lang": "en",
             "name": "English",
@@ -16,9 +16,9 @@
             "path": "lang/ru.json"
         },
         {
-            "lang": "pt-br",
+            "lang": "pt-BR",
             "name": "Português (Brasil)",
-            "path": "lang/pt-br.json"
+            "path": "lang/pt-BR.json"
         }
     ],
     "minimumCoreVersion": "12",

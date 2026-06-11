@@ -86,6 +86,10 @@ export class LancerCommunicator {
 
         game.socket.on('module.lancer-communicator', (payload) => {
             if (payload?.type === 'showMessage' && payload.data?.characterName) {
+                this.savedMessages.push({
+                    ...payload.data,
+                    timestamp: payload.data.timestamp || new Date().toISOString()
+                });
                 this.showCommunicatorMessage(payload.data).catch(console.error);
             }
         });
@@ -337,7 +341,7 @@ export class LancerCommunicator {
         new Dialog({
             title: game.i18n.localize('LANCER.Settings.CommunicatorSettings'),
             content: `
-                <form class="lancer-communicator-dialog">
+                <form class="lancer-communicator-dialog grid-2">
                     <div class="lcm-form-group">
                         <label>${game.i18n.localize('LANCER.Settings.CharacterName')}</label>
                         <input type="text" id="character-name" value="${escapedCharName}" placeholder="${game.i18n.localize('LANCER.Settings.CharacterName')}">
@@ -373,8 +377,8 @@ export class LancerCommunicator {
                     <div class="lcm-form-group">
                         <label>${game.i18n.localize('LANCER.Settings.typingSpeed')} <small style="color:#999;">(${game.i18n.localize('LANCER.Settings.globalTypingSpeed')}: ${globalTypingSpeed})</small></label>
                         <div class="lcm-input-group" style="align-items:center;">
-                            <input type="checkbox" id="use-global-speed" ${useGlobalSpeed ? 'checked' : ''} style="width:auto;margin-right:5px;">
-                            <label for="use-global-speed" style="font-weight:normal;font-size:12px;margin-right:10px;">${game.i18n.localize('LANCER.Settings.useGlobalSpeed')}</label>
+                            <input type="checkbox" id="use-global-speed" ${useGlobalSpeed ? 'checked' : ''}>
+                            <label for="use-global-speed" style="font-weight:normal;font-size:12px;margin-bottom:0;">${game.i18n.localize('LANCER.Settings.useGlobalSpeed')}</label>
                         </div>
                         <div class="lcm-input-group" id="typing-speed-row" style="margin-top:5px;${useGlobalSpeed ? 'opacity:0.5;pointer-events:none;' : ''}">
                             <input type="range" id="typing-speed-input" min="50" max="180" step="10" value="${typingSpeedValue}">
@@ -405,7 +409,6 @@ export class LancerCommunicator {
                         <label>${game.i18n.localize('LANCER.Settings.MessageStyle')}</label>
                         <select id="message-style">${styleOptions}</select>
                     </div>
-                    <div id="style-preview" class="lcm-form-group"></div>
                     <div class="lcm-form-group lcm-post-to-chat-row">
                         <label class="lcm-toggle-label">
                             <input type="checkbox" id="post-to-chat" ${game.settings.get('lancer-communicator', 'postToChat') ? 'checked' : ''}>
@@ -414,6 +417,7 @@ export class LancerCommunicator {
                         <small class="lcm-hint">${game.i18n.localize('LANCER.Settings.PostToChatHint')}</small>
                     </div>
                 </form>
+                <div id="style-preview" class="lcm-form-group" style="margin-top: 15px;"></div>
             `,
             buttons: {
                 send: {
@@ -477,7 +481,7 @@ export class LancerCommunicator {
             default: 'send',
             render: (html) => this._renderDialogHandlers(html),
             close: (html) => this._closeDialogHandler(html)
-        }).render(true);
+        }, { width: 900, height: 700, classes: ['dialog', 'lancer-communicator-dialog'] }).render(true);
     }
 
     /**
@@ -552,7 +556,7 @@ export class LancerCommunicator {
                 autoSpeedBtn.textContent = '...';
 
                 const duration = await this._getAudioDuration(voiceoverPath);
-                
+
                 // Проверка минимальной длительности озвучки (3 секунды)
                 if (duration < 3) {
                     ui.notifications.warn(game.i18n.localize('LANCER.Settings.Warnings.VoiceoverTooShort'));
@@ -560,7 +564,7 @@ export class LancerCommunicator {
                     autoSpeedBtn.textContent = game.i18n.localize('LANCER.Settings.autoSpeed');
                     return;
                 }
-                
+
                 const textLength = messageText.trim().length;
                 const calculatedSpeed = this._calculateTypingSpeedFromAudio(duration, textLength);
 
@@ -628,12 +632,12 @@ export class LancerCommunicator {
             `;
 
             const stylePresets = {
-                green:     { color: 'green',   border: '1px solid #03FB8D', boxShadow: '0 0 5px rgba(3,251,141,0.5)',   bg: 'rgba(0,255,0,0.1)' },
-                blue:      { color: '#00A4FF', border: '1px solid #00A4FF', boxShadow: '0 0 5px rgba(0,164,255,0.5)',   bg: 'rgba(0,0,255,0.1)' },
-                red:       { color: '#FF0000', border: '1px solid #FF0000', boxShadow: '0 0 5px rgba(255,0,0,0.5)',    bg: 'rgba(255,0,0,0.1)' },
-                yellow:    { color: '#FFD700', border: '1px solid #FFD700', boxShadow: '0 0 5px rgba(255,215,0,0.5)',   bg: 'rgba(255,255,0,0.1)' },
-                damaged:   { color: 'darkred', border: '1px solid maroon',  boxShadow: '0 0 5px rgba(255,0,0,0.5)',    bg: 'rgba(128,0,0,0.1)' },
-                undertale: { color: 'white',   border: '2px solid white',   boxShadow: '0 0 10px rgba(255,255,255,0.5)', bg: 'rgba(0,0,0,0.95)' }
+                green: { color: 'green', border: '1px solid #03FB8D', boxShadow: '0 0 5px rgba(3,251,141,0.5)', bg: 'rgba(0,255,0,0.1)' },
+                blue: { color: '#00A4FF', border: '1px solid #00A4FF', boxShadow: '0 0 5px rgba(0,164,255,0.5)', bg: 'rgba(0,0,255,0.1)' },
+                red: { color: '#FF0000', border: '1px solid #FF0000', boxShadow: '0 0 5px rgba(255,0,0,0.5)', bg: 'rgba(255,0,0,0.1)' },
+                yellow: { color: '#FFD700', border: '1px solid #FFD700', boxShadow: '0 0 5px rgba(255,215,0,0.5)', bg: 'rgba(255,255,0,0.1)' },
+                damaged: { color: 'darkred', border: '1px solid maroon', boxShadow: '0 0 5px rgba(255,0,0,0.5)', bg: 'rgba(128,0,0,0.1)' },
+                undertale: { color: 'white', border: '2px solid white', boxShadow: '0 0 10px rgba(255,255,255,0.5)', bg: 'rgba(0,0,0,0.95)' }
             };
 
             const preset = stylePresets[selectedStyle] || stylePresets.green;
@@ -720,13 +724,15 @@ export class LancerCommunicator {
             fontSize,
             fontFamily: effectiveFont,
             typingSpeed: effectiveTypingSpeed,
-            messageWidth: effectiveWidth
+            messageWidth: effectiveWidth,
+            senderId: game.user.id,
+            timestamp: new Date().toISOString()
         };
 
         this.debug('Sending message:', messageData);
 
         // Сохраняем сообщение для последующего экспорта
-        this.savedMessages.push({ ...messageData, timestamp: new Date().toISOString() });
+        this.savedMessages.push(messageData);
 
         // Показываем локально
         this.showCommunicatorMessage(messageData).catch(console.error);
@@ -1186,7 +1192,7 @@ export class LancerCommunicator {
                 }
             },
             default: 'create'
-        }).render(true);
+        }, { classes: ['dialog', 'lancer-communicator-dialog'] }).render(true);
     }
 
     /**
@@ -1347,7 +1353,7 @@ export class LancerCommunicator {
                 });
             },
             close: () => resolve(null)
-        }).render(true);
+        }, { classes: ['dialog', 'lancer-communicator-dialog'] }).render(true);
     });
     
     if (result && result.message && result.message.trim()) {
@@ -1385,7 +1391,7 @@ export class LancerCommunicator {
                 }
             },
             default: 'create'
-        }).render(true);
+        }, { classes: ['dialog', 'lancer-communicator-dialog'] }).render(true);
     }
 
     // ─── UTILITIES ─────────────────────────────────────────────────
@@ -1410,13 +1416,14 @@ export class LancerCommunicator {
      */
     static openSaveMessagesDialog() {
         const isGM = game.user.isGM;
-        const allowExport = isGM || (game.settings.get('lancer-communicator', 'allowPlayersExport') ?? false);
+        const allowAccess = isGM || (game.settings.get('lancer-communicator', 'allowPlayersAccess') ?? true);
 
-        if (!allowExport) {
-            ui.notifications.warn(game.i18n.localize('LANCER.Settings.Warnings.NoExportPermission'));
+        if (!allowAccess) {
+            ui.notifications.warn(game.i18n.localize('LANCER.Settings.Warnings.NoAccessPermission') || "Você não tem permissão para acessar os registros.");
             return;
         }
 
+        const allowExport = isGM || (game.settings.get('lancer-communicator', 'allowPlayersExport') ?? false);
         const messages = this.savedMessages;
         const count = messages.length;
 
@@ -1435,8 +1442,10 @@ export class LancerCommunicator {
                 const portrait = m.portraitPath
                     ? `<img src="${this._escapeHtml(m.portraitPath)}" alt="${name}" class="lcm-bubble-avatar" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
                     : '';
+                const isSelf = m.senderId === game.user.id;
+                const selfClass = isSelf ? ' lcm-bubble-row--self' : '';
                 return `
-                <div class="lcm-bubble-row">
+                <div class="lcm-bubble-row${selfClass}">
                     <div class="lcm-bubble-avatar-wrap">
                         ${portrait}
                         <div class="lcm-bubble-initial lcm-bubble-initial--${style}"${portrait ? ' style="display:none"' : ''}>${initial}</div>
@@ -1466,43 +1475,51 @@ export class LancerCommunicator {
                 </div>
             </div>`;
 
+        const buttons = {};
+
+        if (allowExport) {
+            buttons.exportJson = {
+                icon: '<i class="fas fa-file-code"></i>',
+                label: game.i18n.localize('LANCER.Settings.ChatLog.ExportJSON'),
+                callback: () => this._downloadMessages('json')
+            };
+            buttons.exportTxt = {
+                icon: '<i class="fas fa-file-alt"></i>',
+                label: game.i18n.localize('LANCER.Settings.ChatLog.ExportTXT'),
+                callback: () => this._downloadMessages('txt')
+            };
+        }
+
+        if (isGM) {
+            buttons.clear = {
+                icon: '<i class="fas fa-trash"></i>',
+                label: game.i18n.localize('LANCER.Settings.ChatLog.Clear'),
+                callback: () => {
+                    this.savedMessages = [];
+                    ui.notifications.info(game.i18n.localize('LANCER.Settings.ChatLog.Cleared'));
+                }
+            };
+        }
+
+        buttons.close = {
+            icon: '<i class="fas fa-times"></i>',
+            label: game.i18n.localize('LANCER.Settings.Cancel')
+        };
+
         const dlg = new Dialog({
             title: game.i18n.localize('LANCER.Settings.ChatLog.Title'),
             content,
-            buttons: {
-                exportJson: {
-                    icon: '<i class="fas fa-file-code"></i>',
-                    label: game.i18n.localize('LANCER.Settings.ChatLog.ExportJSON'),
-                    callback: () => this._downloadMessages('json')
-                },
-                exportTxt: {
-                    icon: '<i class="fas fa-file-alt"></i>',
-                    label: game.i18n.localize('LANCER.Settings.ChatLog.ExportTXT'),
-                    callback: () => this._downloadMessages('txt')
-                },
-                clear: {
-                    icon: '<i class="fas fa-trash"></i>',
-                    label: game.i18n.localize('LANCER.Settings.ChatLog.Clear'),
-                    callback: () => {
-                        this.savedMessages = [];
-                        ui.notifications.info(game.i18n.localize('LANCER.Settings.ChatLog.Cleared'));
-                    }
-                },
-                close: {
-                    icon: '<i class="fas fa-times"></i>',
-                    label: game.i18n.localize('LANCER.Settings.Cancel')
-                }
-            },
+            buttons,
             default: 'close',
             render: (html) => {
                 // Scroll to bottom on open
                 const feed = html[0].querySelector('#lcm-chat-feed');
                 if (feed) feed.scrollTop = feed.scrollHeight;
             }
-        }, { 
-            width: 560, 
-            height: 540, 
-            classes: ['dialog', 'lcm-custom-dialog'] 
+        }, {
+            width: 800,
+            height: 600,
+            classes: ['dialog', 'lcm-custom-dialog']
         }).render(true);
     }
 
@@ -1513,7 +1530,7 @@ export class LancerCommunicator {
      */
     static _downloadMessages(format) {
         const messages = this.savedMessages;
-        
+
         // Verificação de segurança extra
         if (!messages || messages.length === 0) {
             ui.notifications.warn(game.i18n.localize('LANCER.Settings.ChatLog.Empty'));
@@ -1531,13 +1548,13 @@ export class LancerCommunicator {
             content = messages.map(m => {
                 const ts = m.timestamp ? new Date(m.timestamp).toLocaleString() : '--';
                 const charName = m.characterName || game.i18n.localize('LANCER.Unknown') || 'Unknown';
-                
+
                 // Remove tags HTML se a mensagem for texto rico (opcional, mas recomendado para TXT)
                 const cleanMessage = m.message ? m.message.replace(/<[^>]+>/g, '') : '';
-                
+
                 return `[${ts}] ${charName}: ${cleanMessage}`;
             }).join('\n\n'); // Dupla quebra de linha para separar melhor cada mensagem
-            
+
             mime = 'text/plain';
             ext = 'txt';
         }

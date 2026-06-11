@@ -90,7 +90,132 @@ Hooks.once('ready', () => {
     }
 
     LancerCommunicator.initSocketListeners();
+
+    // Registrar o comando de chat (/lcm)
+    Hooks.on('chatMessage', (chatLog, messageText, chatData) => {
+        if (messageText.trim().startsWith('/lcm')) {
+            handleLancerCommunicatorCommand(messageText);
+            return false; // Evita que a mensagem seja enviada ao chat regular
+        }
+    });
 });
+
+/**
+ * Processa comandos do Lancer Communicator no chat
+ * @param {string} messageText - O texto digitado pelo usuário
+ */
+function handleLancerCommunicatorCommand(messageText) {
+    const rawArgs = messageText.trim().substring(4).trim(); // Remove "/lcm"
+
+    if (!rawArgs) {
+        LancerCommunicator.openCommunicatorSettings();
+        return;
+    }
+
+    const args = rawArgs.split(/\s+/);
+    const cmd = args[0].toLowerCase();
+
+    if (cmd === 'config') {
+        LancerCommunicator.openCommunicatorSettings();
+    } else if (cmd === 'log' || cmd === 'history') {
+        LancerCommunicator.openSaveMessagesDialog();
+    } else if (cmd === 'help') {
+        displayHelpMessage();
+    } else if (cmd === 'send') {
+        const sendContent = rawArgs.substring(4).trim(); // Remove "send"
+        handleDirectSend(sendContent);
+    } else {
+        ui.notifications.warn(`Lancer Communicator: Comando desconhecido "${cmd}". Digite "/lcm help" para ajuda.`);
+    }
+}
+
+/**
+ * Exibe a mensagem de ajuda no chat como sussurro para o usuário
+ */
+function displayHelpMessage() {
+    const helpContent = `
+        <div class="lcm-chat-help">
+            <h3 style="border-bottom: 1px solid var(--lcm-neon-green, #03FB8D); padding-bottom: 3px; color: var(--lcm-neon-green, #03FB8D); margin-top: 0;">Lancer Communicator - Comandos</h3>
+            <p style="margin: 4px 0;"><strong>/lcm</strong> ou <strong>/lcm config</strong> : Abre as configurações do comunicador.</p>
+            <p style="margin: 4px 0;"><strong>/lcm log</strong> ou <strong>/lcm history</strong> : Abre o histórico de mensagens.</p>
+            <p style="margin: 4px 0;"><strong>/lcm send [Personagem] | [Mensagem]</strong> : Envia uma mensagem rapidamente. Use a barra vertical (|) para separar o nome do personagem do texto.</p>
+            <p style="margin: 4px 0;"><strong>/lcm help</strong> : Exibe esta ajuda.</p>
+        </div>
+    `;
+
+    ChatMessage.create({
+        user: game.user.id,
+        content: helpContent,
+        whisper: [game.user.id],
+        speaker: { alias: "Lancer Communicator" }
+    });
+}
+
+/**
+ * Processa e envia uma mensagem do comunicador diretamente
+ * @param {string} sendContent - O texto após o comando send
+ */
+function handleDirectSend(sendContent) {
+    if (!sendContent) {
+        ui.notifications.warn("Lancer Communicator: Por favor, especifique uma mensagem. Uso: /lcm send [Personagem] | [Mensagem]");
+        return;
+    }
+
+    let characterName = "";
+    let message = "";
+
+    if (sendContent.includes("|")) {
+        const parts = sendContent.split("|");
+        characterName = parts[0].trim();
+        message = parts.slice(1).join("|").trim();
+    } else {
+        message = sendContent.trim();
+        const activeToken = canvas.tokens?.controlled[0];
+        characterName = activeToken?.actor?.name || 
+                        game.user.character?.name || 
+                        game.settings.get(MODULE_NAME, 'lastCharacterName') || 
+                        game.user.name;
+    }
+
+    if (!message) {
+        ui.notifications.warn("Lancer Communicator: Mensagem vazia.");
+        return;
+    }
+
+    // Busca o retrato associado
+    let portraitPath = "";
+    const actor = game.actors.find(a => a.name === characterName);
+    if (actor) {
+        portraitPath = actor.img;
+    }
+    if (!portraitPath) {
+        portraitPath = game.settings.get(MODULE_NAME, 'lastPortrait') || game.user.avatar || "icons/svg/mystery-man.svg";
+    }
+
+    const soundPath = game.settings.get(MODULE_NAME, 'lastSound') || '';
+    const voiceoverPath = game.settings.get(MODULE_NAME, 'lastVoiceover') || '';
+    const style = game.settings.get(MODULE_NAME, 'lastMessageStyle') || 'green';
+    const fontSize = game.settings.get(MODULE_NAME, 'messageFontSize') || 14;
+    const fontFamily = game.settings.get(MODULE_NAME, 'fontFamily') || 'MOSCOW2024';
+    const typingSpeed = game.settings.get(MODULE_NAME, 'lastTypingSpeed');
+    const messageWidth = game.settings.get(MODULE_NAME, 'lastMessageWidth') || game.settings.get(MODULE_NAME, 'globalMessageWidth') || 40;
+    const postToChat = game.settings.get(MODULE_NAME, 'postToChat');
+
+    LancerCommunicator.sendCommunicatorMessage(
+        characterName,
+        portraitPath,
+        message,
+        soundPath,
+        voiceoverPath,
+        style,
+        fontSize,
+        fontFamily,
+        typingSpeed,
+        messageWidth,
+        postToChat
+    );
+}
+
 
 
 // ─── Helper: inject the log button into sidebar-tabs ───────────
