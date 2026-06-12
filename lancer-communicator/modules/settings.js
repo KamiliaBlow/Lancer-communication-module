@@ -15,6 +15,15 @@ export function registerSettings() {
         default: true
     });
 
+    game.settings.register(MODULE, 'postImageToChat', {
+        name: game.i18n.localize('LANCER.Settings.PostImageToChat'),
+        hint: game.i18n.localize('LANCER.Settings.PostImageToChatHint'),
+        scope: 'client',
+        config: true,
+        type: Boolean,
+        default: true
+    });
+
     game.settings.register(MODULE, 'allowPlayersAccess', {
         name: game.i18n.localize('LANCER.Settings.AllowPlayersAccess'),
         hint: game.i18n.localize('LANCER.Settings.AllowPlayersAccessHint'),
@@ -189,5 +198,13 @@ export function registerSettings() {
         config: false,
         type: Number,
         default: null
+    });
+
+    game.settings.register(MODULE, 'lastImage', {
+        name: game.i18n.localize('LANCER.Settings.ImageSelect'),
+        scope: 'client',
+        config: false,
+        type: String,
+        default: ''
     });
 }
