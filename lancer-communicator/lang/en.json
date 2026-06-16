@@ -21,6 +21,9 @@
         "DialingSound": "Dialing sound",
         "LastSelectSound": "Last selected sound",
         "ClearSound": "Clear Sound",
+        "ImageSelect": "Image Selection",
+        "SelectImage": "Select Image",
+        "ClearImage": "Clear Image",
         "VoiceoverSelect": "Voiceover",
         "SelectVoiceover": "Select Voiceover",
         "ClearVoiceover": "Clear",
@@ -49,6 +52,10 @@
         "FontFamilyHint": "The font used for communicator messages",
         "FontSize": "Font size",
         "FontSizeHint": "Size of the message text in pixels",
+        "globalMessageWidth": "Default Message Box Width",
+        "globalMessageWidthHint": "Global default width of the pop-up message box in percent (20% - 90%)",
+        "MessageWidth": "Message Box Width",
+        "MessageWidthHint": "Width of this pop-up message box in percent (20% - 90%)",
         "FontSelect": "Font select",
         "EnableTextShake": "Enable Text Shake",
         "EnableTextShakeHint": "Toggle shaking animation for uppercase text",
@@ -57,8 +64,25 @@
         "PortraitHint": "You can paste a direct image URL (e.g. from Imgur) or select a file from your Foundry library.",
         "PostToChat": "Post to Chat",
         "PostToChatHint": "After sending, the communicator message is duplicated to the Foundry chat log so players who missed it can read it",
+        "PostImageToChat": "Post Image to Chat",
+        "PostImageToChatHint": "If enabled, the attached image will be displayed in the chat log.",
         "AllowPlayersAccess": "Allow Players to Access Communicator",
         "AllowPlayersAccessHint": "If enabled, players will see the Communicator button in token tools",
+        "AllowPlayersExport": "Allow Players to Export Chat Log",
+        "AllowPlayersExportHint": "If enabled, players can open the chat log window and export messages (GM always can)",
+        "ChatLog": {
+            "Title": "Communicator Chat Log",
+            "ButtonTitle": "Communicator Log",
+            "Count": "{count} message(s) recorded this session",
+            "Empty": "No messages recorded yet",
+            "Time": "Time",
+            "Character": "Character",
+            "Message": "Message",
+            "ExportJSON": "Export JSON",
+            "ExportTXT": "Export TXT",
+            "Clear": "Clear Log",
+            "Cleared": "Chat log cleared"
+        },
         "Notifications": {
             "MacroCreated": "Macro \"{name}\" created successfully!",
             "QuickMacroCreated": "Quick macro \"{name}\" created successfully!",
@@ -73,7 +97,8 @@
             "AutoSpeedFailed": "Failed to load audio file for speed calculation",
             "VoiceoverTooShort": "Voiceover file must be at least 3 seconds long!",
             "FileNotFound": "Selected file not found!",
-            "MacroAlreadyExists": "A macro with this name already exists!"
+            "MacroAlreadyExists": "A macro with this name already exists!",
+            "NoExportPermission": "You do not have permission to export the chat log"
         }
     }
 }

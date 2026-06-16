@@ -1,7 +1,3 @@
-/**
- * Основной класс Lancer Communicator
- * Управляет показом сообщений и диалоговым интерфейсом
- */
 export class LancerCommunicator {
     /** Кэшированные настройки модуля */
     static settings = {
@@ -10,6 +6,7 @@ export class LancerCommunicator {
         voiceVolume: 0.3,
         fontFamily: 'MOSCOW2024',
         enableTextShake: true,
+        globalMessageWidth: 40,
         debugMode: false
     };
 
@@ -19,9 +16,17 @@ export class LancerCommunicator {
     /** Текущий контейнер сообщения */
     static currentContainer = null;
 
+    /** Список сохранённых сообщений для экспорта */
+    static savedMessages = [];
+
     /** Список доступных шрифтов для диалога */
     static FONTS = [
         'MOSCOW2024',
+        'Orbitron',
+        'Share Tech Mono',
+        'Chakra Petch',
+        'Space Mono',
+        'Handjet',
         'Undertale',
         'TeletactileRus',
         'Kereru',
@@ -81,6 +86,10 @@ export class LancerCommunicator {
 
         game.socket.on('module.lancer-communicator', (payload) => {
             if (payload?.type === 'showMessage' && payload.data?.characterName) {
+                this.savedMessages.push({
+                    ...payload.data,
+                    timestamp: payload.data.timestamp || new Date().toISOString()
+                });
                 this.showCommunicatorMessage(payload.data).catch(console.error);
             }
         });
@@ -96,6 +105,7 @@ export class LancerCommunicator {
         this.settings.voiceVolume = game.settings.get('lancer-communicator', 'voiceVolume') ?? 0.3;
         this.settings.fontFamily = game.settings.get('lancer-communicator', 'fontFamily') || 'MOSCOW2024';
         this.settings.enableTextShake = game.settings.get('lancer-communicator', 'enableTextShake') ?? true;
+        this.settings.globalMessageWidth = game.settings.get('lancer-communicator', 'globalMessageWidth') ?? 40;
         this.settings.debugMode = game.settings.get('lancer-communicator', 'debugMode') ?? false;
         this.debug('Settings cached:', this.settings);
     }
@@ -150,10 +160,14 @@ export class LancerCommunicator {
             message: this._getFormValue(form, '#message-input'),
             soundPath: this._getFormValue(form, '#sound-path'),
             voiceoverPath: this._getFormValue(form, '#voiceover-path'),
+            imagePath: this._getFormValue(form, '#image-path'),
             style: this._getFormValue(form, '#message-style'),
             fontFamily: this._getFormValue(form, '#font-family'),
             fontSize: Number(this._getFormValue(form, '#font-size-input')) || 14,
-            typingSpeed: useGlobalSpeed ? null : typingSpeedValue
+            typingSpeed: useGlobalSpeed ? null : typingSpeedValue,
+            messageWidth: Number(this._getFormValue(form, '#message-width-input')) || 40,
+            postToChat: form.querySelector('#post-to-chat')?.checked ?? game.settings.get('lancer-communicator', 'postToChat'),
+            postImageToChat: form.querySelector('#post-image-to-chat')?.checked ?? game.settings.get('lancer-communicator', 'postImageToChat')
         };
     }
 
@@ -169,10 +183,9 @@ export class LancerCommunicator {
             return false;
         }
         if (!data.portraitPath) {
-            ui.notifications.warn(game.i18n.localize('LANCER.Settings.Warnings.NoPortrait'));
-            return false;
+            data.portraitPath = 'icons/svg/mystery-man.svg';
         }
-        if (requireMessage && !data.message.trim()) {
+        if (requireMessage && !data.message.trim() && !data.imagePath) {
             ui.notifications.warn(game.i18n.localize('LANCER.Settings.Warnings.NoMessage'));
             return false;
         }
@@ -301,10 +314,13 @@ export class LancerCommunicator {
         let lastCharacterName = game.settings.get('lancer-communicator', 'lastCharacterName');
         const lastSound = game.settings.get('lancer-communicator', 'lastSound');
         const lastVoiceover = game.settings.get('lancer-communicator', 'lastVoiceover');
+        const lastImage = game.settings.get('lancer-communicator', 'lastImage');
         const lastStyle = game.settings.get('lancer-communicator', 'lastMessageStyle');
         const fontSize = game.settings.get('lancer-communicator', 'messageFontSize');
         const lastTypingSpeed = game.settings.get('lancer-communicator', 'lastTypingSpeed');
         const globalTypingSpeed = this.settings.globalTypingSpeed;
+        const lastMessageWidth = game.settings.get('lancer-communicator', 'lastMessageWidth');
+        const globalMessageWidth = this.settings.globalMessageWidth;
 
         if (selectedToken) {
             lastCharacterName = selectedToken.name;
@@ -327,7 +343,7 @@ export class LancerCommunicator {
         new Dialog({
             title: game.i18n.localize('LANCER.Settings.CommunicatorSettings'),
             content: `
-                <form class="lancer-communicator-dialog">
+                <form class="lancer-communicator-dialog grid-2">
                     <div class="lcm-form-group">
                         <label>${game.i18n.localize('LANCER.Settings.CharacterName')}</label>
                         <input type="text" id="character-name" value="${escapedCharName}" placeholder="${game.i18n.localize('LANCER.Settings.CharacterName')}">
@@ -361,10 +377,18 @@ export class LancerCommunicator {
                         </div>
                     </div>
                     <div class="lcm-form-group">
+                        <label>${game.i18n.localize('LANCER.Settings.ImageSelect')}</label>
+                        <div class="lcm-input-group">
+                            <input type="text" id="image-path" value="${this._escapeHtml(lastImage || '')}" readonly placeholder="${game.i18n.localize('LANCER.Settings.SelectImage')}">
+                            <button type="button" id="select-image">${game.i18n.localize('LANCER.Settings.SelectImage')}</button>
+                            <button type="button" id="clear-image">${game.i18n.localize('LANCER.Settings.ClearImage')}</button>
+                        </div>
+                    </div>
+                    <div class="lcm-form-group">
                         <label>${game.i18n.localize('LANCER.Settings.typingSpeed')} <small style="color:#999;">(${game.i18n.localize('LANCER.Settings.globalTypingSpeed')}: ${globalTypingSpeed})</small></label>
                         <div class="lcm-input-group" style="align-items:center;">
-                            <input type="checkbox" id="use-global-speed" ${useGlobalSpeed ? 'checked' : ''} style="width:auto;margin-right:5px;">
-                            <label for="use-global-speed" style="font-weight:normal;font-size:12px;margin-right:10px;">${game.i18n.localize('LANCER.Settings.useGlobalSpeed')}</label>
+                            <input type="checkbox" id="use-global-speed" ${useGlobalSpeed ? 'checked' : ''}>
+                            <label for="use-global-speed" style="font-weight:normal;font-size:12px;margin-bottom:0;">${game.i18n.localize('LANCER.Settings.useGlobalSpeed')}</label>
                         </div>
                         <div class="lcm-input-group" id="typing-speed-row" style="margin-top:5px;${useGlobalSpeed ? 'opacity:0.5;pointer-events:none;' : ''}">
                             <input type="range" id="typing-speed-input" min="50" max="180" step="10" value="${typingSpeedValue}">
@@ -385,11 +409,32 @@ export class LancerCommunicator {
                         </div>
                     </div>
                     <div class="lcm-form-group">
+                        <label>${game.i18n.localize('LANCER.Settings.MessageWidth')}</label>
+                        <div class="lcm-input-group">
+                            <input type="range" id="message-width-input" min="20" max="90" step="5" value="${lastMessageWidth ?? globalMessageWidth ?? 40}">
+                            <span id="message-width-display">${lastMessageWidth ?? globalMessageWidth ?? 40}%</span>
+                        </div>
+                    </div>
+                    <div class="lcm-form-group">
                         <label>${game.i18n.localize('LANCER.Settings.MessageStyle')}</label>
                         <select id="message-style">${styleOptions}</select>
                     </div>
-                    <div id="style-preview" class="lcm-form-group"></div>
+                    <div class="lcm-form-group lcm-post-to-chat-row">
+                        <label class="lcm-toggle-label">
+                            <input type="checkbox" id="post-to-chat" ${game.settings.get('lancer-communicator', 'postToChat') ? 'checked' : ''}>
+                            <span>${game.i18n.localize('LANCER.Settings.PostToChat')}</span>
+                        </label>
+                        <small class="lcm-hint">${game.i18n.localize('LANCER.Settings.PostToChatHint')}</small>
+                    </div>
+                    <div class="lcm-form-group lcm-post-to-chat-row">
+                        <label class="lcm-toggle-label">
+                            <input type="checkbox" id="post-image-to-chat" ${game.settings.get('lancer-communicator', 'postImageToChat') ? 'checked' : ''}>
+                            <span>${game.i18n.localize('LANCER.Settings.PostImageToChat')}</span>
+                        </label>
+                        <small class="lcm-hint">${game.i18n.localize('LANCER.Settings.PostImageToChatHint')}</small>
+                    </div>
                 </form>
+                <div id="style-preview" class="lcm-form-group" style="margin-top: 15px;"></div>
             `,
             buttons: {
                 send: {
@@ -402,8 +447,9 @@ export class LancerCommunicator {
                         this._saveDialogSettings(data);
                         this.sendCommunicatorMessage(
                             data.characterName, data.portraitPath, data.message,
-                            data.soundPath, data.voiceoverPath, data.style,
-                            data.fontSize, data.fontFamily, data.typingSpeed
+                            data.soundPath, data.voiceoverPath, data.imagePath, data.style,
+                            data.fontSize, data.fontFamily, data.typingSpeed,
+                            null, data.postToChat, data.postImageToChat
                         );
                     }
                 },
@@ -421,8 +467,8 @@ export class LancerCommunicator {
 
                         await this.createCommunicatorMacro(
                             data.characterName, data.portraitPath, data.message,
-                            data.soundPath, data.voiceoverPath, data.style,
-                            data.fontSize, data.fontFamily, data.typingSpeed
+                            data.soundPath, data.voiceoverPath, data.imagePath, data.style,
+                            data.fontSize, data.fontFamily, data.typingSpeed, null, data.postImageToChat
                         );
                     }
                 },
@@ -440,7 +486,7 @@ export class LancerCommunicator {
 
                         await this.createQuickCommunicatorMacro(
                             data.characterName, data.portraitPath, data.soundPath,
-                            data.voiceoverPath, data.style, data.fontSize, data.fontFamily, data.typingSpeed
+                            data.voiceoverPath, data.imagePath, data.style, data.fontSize, data.fontFamily, data.typingSpeed, null, data.postImageToChat
                         );
                     }
                 },
@@ -452,7 +498,7 @@ export class LancerCommunicator {
             default: 'send',
             render: (html) => this._renderDialogHandlers(html),
             close: (html) => this._closeDialogHandler(html)
-        }).render(true);
+        }, { width: 900, height: 700, classes: ['dialog', 'lancer-communicator-dialog'] }).render(true);
     }
 
     /**
@@ -478,9 +524,10 @@ export class LancerCommunicator {
             }).browse();
         });
 
-        // FilePicker для звука и озвучки
+        // FilePicker для звука и озвучки и картинки
         this._setupFilePicker(dialog.querySelector('#sound-path'), 'audio');
         this._setupFilePicker(dialog.querySelector('#voiceover-path'), 'audio');
+        this._setupFilePicker(dialog.querySelector('#image-path'), 'image');
 
         // Обработчик чекбокса "Использовать глобальную скорость"
         const useGlobalCheckbox = dialog.querySelector('#use-global-speed');
@@ -527,7 +574,7 @@ export class LancerCommunicator {
                 autoSpeedBtn.textContent = '...';
 
                 const duration = await this._getAudioDuration(voiceoverPath);
-                
+
                 // Проверка минимальной длительности озвучки (3 секунды)
                 if (duration < 3) {
                     ui.notifications.warn(game.i18n.localize('LANCER.Settings.Warnings.VoiceoverTooShort'));
@@ -535,7 +582,7 @@ export class LancerCommunicator {
                     autoSpeedBtn.textContent = game.i18n.localize('LANCER.Settings.autoSpeed');
                     return;
                 }
-                
+
                 const textLength = messageText.trim().length;
                 const calculatedSpeed = this._calculateTypingSpeedFromAudio(duration, textLength);
 
@@ -574,6 +621,16 @@ export class LancerCommunicator {
             document.documentElement.style.setProperty('--message-font-size', `${size}px`);
         });
 
+        // Обновление отображения ширины окна сообщения
+        const messageWidthInput = dialog.querySelector('#message-width-input');
+        const messageWidthDisplay = dialog.querySelector('#message-width-display');
+        messageWidthInput.addEventListener('input', () => {
+            const width = Number(messageWidthInput.value);
+            messageWidthDisplay.textContent = `${width}%`;
+            document.documentElement.style.setProperty('--message-width', `${width}%`);
+            document.documentElement.style.setProperty('--message-left', `${(100 - width) / 2}%`);
+        });
+
         // Предпросмотр стилей
         const styleSelect = dialog.querySelector('#message-style');
         const preview = dialog.querySelector('#style-preview');
@@ -593,12 +650,12 @@ export class LancerCommunicator {
             `;
 
             const stylePresets = {
-                green:     { color: 'green',   border: '1px solid #03FB8D', boxShadow: '0 0 5px rgba(3,251,141,0.5)',   bg: 'rgba(0,255,0,0.1)' },
-                blue:      { color: '#00A4FF', border: '1px solid #00A4FF', boxShadow: '0 0 5px rgba(0,164,255,0.5)',   bg: 'rgba(0,0,255,0.1)' },
-                red:       { color: '#FF0000', border: '1px solid #FF0000', boxShadow: '0 0 5px rgba(255,0,0,0.5)',    bg: 'rgba(255,0,0,0.1)' },
-                yellow:    { color: '#FFD700', border: '1px solid #FFD700', boxShadow: '0 0 5px rgba(255,215,0,0.5)',   bg: 'rgba(255,255,0,0.1)' },
-                damaged:   { color: 'darkred', border: '1px solid maroon',  boxShadow: '0 0 5px rgba(255,0,0,0.5)',    bg: 'rgba(128,0,0,0.1)' },
-                undertale: { color: 'white',   border: '2px solid white',   boxShadow: '0 0 10px rgba(255,255,255,0.5)', bg: 'rgba(0,0,0,0.95)' }
+                green: { color: 'green', border: '1px solid #03FB8D', boxShadow: '0 0 5px rgba(3,251,141,0.5)', bg: 'rgba(0,255,0,0.1)' },
+                blue: { color: '#00A4FF', border: '1px solid #00A4FF', boxShadow: '0 0 5px rgba(0,164,255,0.5)', bg: 'rgba(0,0,255,0.1)' },
+                red: { color: '#FF0000', border: '1px solid #FF0000', boxShadow: '0 0 5px rgba(255,0,0,0.5)', bg: 'rgba(255,0,0,0.1)' },
+                yellow: { color: '#FFD700', border: '1px solid #FFD700', boxShadow: '0 0 5px rgba(255,215,0,0.5)', bg: 'rgba(255,255,0,0.1)' },
+                damaged: { color: 'darkred', border: '1px solid maroon', boxShadow: '0 0 5px rgba(255,0,0,0.5)', bg: 'rgba(128,0,0,0.1)' },
+                undertale: { color: 'white', border: '2px solid white', boxShadow: '0 0 10px rgba(255,255,255,0.5)', bg: 'rgba(0,0,0,0.95)' }
             };
 
             const preset = stylePresets[selectedStyle] || stylePresets.green;
@@ -626,9 +683,11 @@ export class LancerCommunicator {
         game.settings.set('lancer-communicator', 'lastCharacterName', data.characterName);
         game.settings.set('lancer-communicator', 'lastPortrait', data.portraitPath);
         game.settings.set('lancer-communicator', 'lastSound', data.soundPath);
+        game.settings.set('lancer-communicator', 'lastImage', data.imagePath);
         game.settings.set('lancer-communicator', 'lastMessageStyle', data.style);
         game.settings.set('lancer-communicator', 'fontFamily', data.fontFamily);
         game.settings.set('lancer-communicator', 'lastTypingSpeed', data.typingSpeed);
+        game.settings.set('lancer-communicator', 'lastMessageWidth', data.messageWidth);
     }
 
     /**
@@ -645,8 +704,17 @@ export class LancerCommunicator {
                 .catch(err => console.error('Lancer Communicator | Error saving font size:', err));
         }
 
+        const messageWidth = Number(formElement.querySelector('#message-width-input')?.value || 40);
+        if (messageWidth >= 20 && messageWidth <= 90) {
+            game.settings.set('lancer-communicator', 'lastMessageWidth', messageWidth)
+                .catch(err => console.error('Lancer Communicator | Error saving message width:', err));
+        }
+
         const voiceoverPath = this._getFormValue(formElement, '#voiceover-path');
         game.settings.set('lancer-communicator', 'lastVoiceover', voiceoverPath);
+
+        const postImageToChat = formElement.querySelector('#post-image-to-chat')?.checked;
+        if (postImageToChat !== undefined) game.settings.set('lancer-communicator', 'postImageToChat', postImageToChat);
     }
 
     // ─── MESSAGING ─────────────────────────────────────────────────
@@ -663,23 +731,33 @@ export class LancerCommunicator {
      * @param {string|null} fontFamily - Семейство шрифта
      * @param {number|null} typingSpeed - Скорость печати (null = глобальная)
      */
-    static sendCommunicatorMessage(characterName, portraitPath, message, soundPath = '', voiceoverPath = '', style = 'green', fontSize = 14, fontFamily = null, typingSpeed = null) {
+    static sendCommunicatorMessage(characterName, portraitPath, message, soundPath = '', voiceoverPath = '', imagePath = '', style = 'green', fontSize = 14, fontFamily = null, typingSpeed = null, messageWidth = null, postToChat = null, postImageToChat = null) {
         const effectiveFont = fontFamily || this.settings.fontFamily;
         const effectiveTypingSpeed = this._getEffectiveTypingSpeed(typingSpeed);
+        const effectiveWidth = messageWidth || this.settings.globalMessageWidth || 40;
+        const effectivePortrait = portraitPath || 'icons/svg/mystery-man.svg';
 
         const messageData = {
             characterName,
-            portraitPath,
+            portraitPath: effectivePortrait,
             message,
             soundPath,
             voiceoverPath,
+            imagePath,
             style,
             fontSize,
             fontFamily: effectiveFont,
-            typingSpeed: effectiveTypingSpeed
+            typingSpeed: effectiveTypingSpeed,
+            messageWidth: effectiveWidth,
+            postImageToChat,
+            senderId: game.user.id,
+            timestamp: new Date().toISOString()
         };
 
         this.debug('Sending message:', messageData);
+
+        // Сохраняем сообщение для последующего экспорта
+        this.savedMessages.push(messageData);
 
         // Показываем локально
         this.showCommunicatorMessage(messageData).catch(console.error);
@@ -688,7 +766,7 @@ export class LancerCommunicator {
             type: 'showMessage',
             data: messageData
         });
-        this._postToChat(messageData);
+        this._postToChat(messageData, postToChat);
     }
 
     /**
@@ -699,12 +777,22 @@ export class LancerCommunicator {
      */
     static _applyTextShake(text) {
         const enableTextShake = game.settings.get('lancer-communicator', 'enableTextShake') ?? true;
-        if (!enableTextShake) return this._escapeHtml(text);
+        if (!enableTextShake) {
+            return text.split(/<br\s*\/?>/i).map(seg => this._escapeHtml(seg)).join('<br>');
+        }
 
         const upperCasePattern = /[A-ZА-Я]/;
         let result = '';
 
         for (let i = 0; i < text.length; i++) {
+            const remaining = text.substring(i);
+            const brMatch = remaining.match(/^<br\s*\/?>/i);
+            if (brMatch) {
+                result += '<br>';
+                i += brMatch[0].length - 1; // -1 as the loop increments i
+                continue;
+            }
+
             const char = text[i];
 
             if (upperCasePattern.test(char)) {
@@ -714,9 +802,11 @@ export class LancerCommunicator {
                 const nextChar = i + 1 < text.length ? text[i + 1] : '';
 
                 const isPeriodBefore = /[\.\!\?]\s*$/.test(previousChars);
+                const isBrBefore = /<br\s*\/?>\s*$/i.test(previousChars);
                 const isNewlineBefore = previousChars.includes('\n');
                 const isStartOfSentence = isFirstChar
                     || isPeriodBefore
+                    || isBrBefore
                     || (isNewlineBefore && !/\S/.test(previousChars.substring(previousChars.lastIndexOf('\n'))));
 
                 const isPartOfAllCaps = upperCasePattern.test(nextChar)
@@ -739,11 +829,11 @@ export class LancerCommunicator {
      * Отправляет копию сообщения коммуникатора в чат Foundry
      * @param {Object} data - Данные сообщения
      */
-    static async _postToChat(data) {
-        const enabled = game.settings.get('lancer-communicator', 'postToChat');
+    static async _postToChat(data, postToChatOverride = null) {
+        const enabled = postToChatOverride !== null ? postToChatOverride : game.settings.get('lancer-communicator', 'postToChat');
         if (!enabled) return;
 
-        const { characterName, portraitPath, message, style, fontFamily } = data;
+        const { characterName, portraitPath, message, style, fontFamily, imagePath, postImageToChat } = data;
 
         const stylePresets = {
             green: {
@@ -798,12 +888,19 @@ export class LancerCommunicator {
         const nameShadow = p.nameShadow ? `text-shadow:${p.nameShadow};` : '';
         const textShadow = p.textShadow ? `text-shadow:${p.textShadow};` : '';
 
-        const content = `<div class="lcm-chat-card${isDamaged ? ' style-damaged' : ''}" style="border:${p.border};box-shadow:${p.shadow};background-color:rgba(0,0,0,0.8);border-radius:5px;padding:8px;display:flex;align-items:flex-start;gap:10px;">
-            <img src="${this._escapeHtml(portraitPath)}" style="width:50px;height:50px;object-fit:cover;border-radius:5px;border:${p.portraitBorder};box-shadow:${p.portraitShadow};flex-shrink:0;${isDamaged ? 'transform:skew(-5deg);filter:contrast(120%) brightness(110%);' : ''}" alt="${this._escapeHtml(characterName)}">
-            <div style="flex-grow:1;min-width:0;">
-                <div class="lcm-chat-name" style="font-size:20px;font-weight:bold;color:${p.nameColor};${nameShadow}margin-bottom:4px;text-transform:uppercase;font-family:'${font}',monospace;">${this._escapeHtml(characterName)}</div>
-                <div class="lcm-chat-text" style="color:${p.textColor};${textShadow}font-size:14px;word-wrap:break-word;white-space:pre-wrap;font-family:'${font}',monospace;">${this._applyTextShake(message)}</div>
+        const imageHtml = (imagePath && (postImageToChat ?? game.settings.get('lancer-communicator', 'postImageToChat')))
+            ? `<div style="margin-top:8px;text-align:center;"><img src="${this._escapeHtml(imagePath)}" onclick="new ImagePopout(this.getAttribute('src')).render(true);" style="max-width:400px; max-height:400px; width:100%; object-fit:contain; border-radius:5px; border:${p.border}; box-shadow:${p.shadow}; cursor:pointer; ${isDamaged ? 'filter:contrast(120%) brightness(110%);' : ''}" alt="Attached Image"></div>`
+            : '';
+
+        const content = `<div class="lcm-chat-card${isDamaged ? ' style-damaged' : ''}" style="border:${p.border};box-shadow:${p.shadow};background-color:rgba(0,0,0,0.8);border-radius:5px;padding:8px;display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;align-items:flex-start;gap:10px;">
+                <img src="${this._escapeHtml(portraitPath)}" style="width:50px;height:50px;object-fit:cover;border-radius:5px;border:${p.portraitBorder};box-shadow:${p.portraitShadow};flex-shrink:0;${isDamaged ? 'transform:skew(-5deg);filter:contrast(120%) brightness(110%);' : ''}" alt="${this._escapeHtml(characterName)}">
+                <div style="flex-grow:1;min-width:0;">
+                    <div class="lcm-chat-name" style="font-size:20px;font-weight:bold;color:${p.nameColor};${nameShadow}margin-bottom:4px;text-transform:uppercase;font-family:'${font}',monospace;">${this._escapeHtml(characterName)}</div>
+                    <div class="lcm-chat-text" style="color:${p.textColor};${textShadow}font-size:14px;word-wrap:break-word;white-space:pre-wrap;font-family:'${font}',monospace;">${this._applyTextShake(message)}</div>
+                </div>
             </div>
+            ${imageHtml}
         </div>`;
 
         try {
@@ -823,7 +920,7 @@ export class LancerCommunicator {
      * @returns {Promise<void>}
      */
     static async showCommunicatorMessage(data) {
-        const { characterName, portraitPath, message, soundPath, voiceoverPath, style, fontSize, fontFamily, typingSpeed } = data;
+        const { characterName, portraitPath, message = '', soundPath, voiceoverPath, imagePath, style, fontSize, fontFamily, typingSpeed, messageWidth } = data;
 
         this.debug('Showing message:', { characterName, message: message?.substring(0, 50) + '...', typingSpeed });
 
@@ -846,7 +943,10 @@ export class LancerCommunicator {
                     <img class="lcm-portrait" src="${this._escapeHtml(portraitPath)}" alt="${this._escapeHtml(characterName)}">
                     <div class="lcm-character-name">${this._escapeHtml(characterName)}</div>
                 </div>
-                <div class="lcm-message-text"></div>
+                <div style="flex-grow:1; display:flex; flex-direction:column; min-width:0;">
+                    <div class="lcm-message-text"></div>
+                    ${imagePath ? `<img class="lcm-message-image" src="${this._escapeHtml(imagePath)}" onclick="new ImagePopout(this.getAttribute('src')).render(true);" style="display:none; max-width:400px; max-height:400px; object-fit:contain; align-self:flex-start; border-radius:5px; margin-top:10px; cursor:pointer;" alt="Attached Image">` : ''}
+                </div>
             </div>
         `;
 
@@ -855,11 +955,15 @@ export class LancerCommunicator {
 
         const messageTextEl = container.querySelector('.lcm-message-text');
 
-        // CSS-переменные для шрифта
+        // CSS-переменные для шрифта и ширины
         if (typeof fontSize === 'number') {
             container.style.setProperty('--message-font-size', `${fontSize}px`);
         }
         container.style.setProperty('--message-font', fontFamily || this.settings.fontFamily);
+
+        const effectiveWidth = messageWidth || this.settings.globalMessageWidth || 40;
+        container.style.setProperty('--message-width', `${effectiveWidth}%`);
+        container.style.setProperty('--message-left', `${(100 - effectiveWidth) / 2}%`);
 
         // Предзагрузка аудио
         let soundInstance = null;
@@ -900,6 +1004,16 @@ export class LancerCommunicator {
 
             const typeWriter = async () => {
                 if (i < message.length) {
+                    const remaining = message.substring(i);
+                    const brMatch = remaining.match(/^<br\s*\/?>/i);
+                    if (brMatch) {
+                        messageTextEl.appendChild(document.createElement('br'));
+                        i += brMatch[0].length;
+                        const delay = Math.max(100 - effectiveTypingSpeed, 10);
+                        setTimeout(typeWriter, delay);
+                        return;
+                    }
+
                     const currentChar = message.charAt(i);
                     const nextChar = (i + 1 < message.length) ? message.charAt(i + 1) : '';
                     const prevChar = (i > 0) ? message.charAt(i - 1) : '';
@@ -910,9 +1024,11 @@ export class LancerCommunicator {
                     if (upperCasePattern.test(currentChar)) {
                         const isFirstChar = (i === 1);
                         const isPeriodBefore = /[\.\!\?]\s*$/.test(previousChars);
+                        const isBrBefore = /<br\s*\/?>\s*$/i.test(previousChars);
                         const isNewlineBefore = previousChars.includes('\n');
                         const isStartOfSentence = isFirstChar
                             || isPeriodBefore
+                            || isBrBefore
                             || (isNewlineBefore && !/\S/.test(previousChars.substring(previousChars.lastIndexOf('\n'))));
 
                         const isPartOfAllCaps = upperCasePattern.test(nextChar)
@@ -952,6 +1068,12 @@ export class LancerCommunicator {
                     // Сообщение завершено — затухаем только звук набора (не озвучку!)
                     if (soundInstance) {
                         this._fadeOutAudio(soundInstance, 800);
+                    }
+
+                    // Показываем картинку если есть
+                    const imageEl = container.querySelector('.lcm-message-image');
+                    if (imageEl) {
+                        imageEl.style.display = 'block';
                     }
 
                     // Ждём завершения озвучки + 3 секунды паузы перед закрытием рамки
@@ -1042,7 +1164,7 @@ export class LancerCommunicator {
     /**
      * Создаёт макрос для отправки сообщения коммуникатора
      */
-    static async createCommunicatorMacro(characterName, portraitPath, message, soundPath, voiceoverPath, style, fontSize, fontFamily = null, typingSpeed = null) {
+    static async createCommunicatorMacro(characterName, portraitPath, message, soundPath, voiceoverPath, imagePath, style, fontSize, fontFamily = null, typingSpeed = null, messageWidth = null, postImageToChat = null) {
         if (!game.user.can('MACRO_SCRIPT')) {
             ui.notifications.warn(game.i18n.localize('LANCER.Settings.Warnings.CreateMacroTextPerm'));
             return;
@@ -1050,6 +1172,8 @@ export class LancerCommunicator {
 
         const escapedName = this._escapeHtml(characterName);
         const typingSpeedArg = typingSpeed !== null ? typingSpeed : 'null';
+        const messageWidthArg = messageWidth !== null ? messageWidth : 'null';
+        const postImageToChatArg = postImageToChat !== null ? postImageToChat : 'null';
 
         new Dialog({
             title: game.i18n.localize('LANCER.Settings.CreateMacroName'),
@@ -1076,19 +1200,23 @@ export class LancerCommunicator {
                             return;
                         }
 
-                        const safeMessage = message.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+                        const safeMessage = message.replace(/\\/g, '\\\\\\\\').replace(/"/g, '\\\\"');
                         const commandText = `// Lancer Communicator Macro
-game.modules.get('lancer-communicator').api.sendCommunicatorMessage(
-    "${characterName.replace(/"/g, '\\"')}",
-    "${portraitPath.replace(/"/g, '\\"')}",
-    "${safeMessage}",
-    "${soundPath}",
-    "${voiceoverPath}",
-    "${style}",
-    ${fontSize},
-    "${fontFamily || ''}",
-    ${typingSpeedArg}
-);`;
+                        game.modules.get('lancer-communicator').api.sendCommunicatorMessage(
+                            "${characterName.replace(/"/g, '\\\\"')}",
+                            "${portraitPath.replace(/"/g, '\\\\"')}",
+                            "${safeMessage}",
+                            "${soundPath}",
+                            "${voiceoverPath}",
+                            "${imagePath}",
+                            "${style}",
+                            ${fontSize},
+                            "${fontFamily || ''}",
+                            ${typingSpeedArg},
+                            ${messageWidthArg},
+                            null,
+                            ${postImageToChatArg}
+                        );`;
 
                         Macro.create({
                             name: macroName,
@@ -1109,13 +1237,13 @@ game.modules.get('lancer-communicator').api.sendCommunicatorMessage(
                 }
             },
             default: 'create'
-        }).render(true);
+        }, { classes: ['dialog', 'lancer-communicator-dialog'] }).render(true);
     }
 
     /**
      * Создаёт быстрый макрос коммуникатора с запросом сообщения при запуске
      */
-    static async createQuickCommunicatorMacro(characterName, portraitPath, soundPath, voiceoverPath, style, fontSize, fontFamily = null, typingSpeed = null) {
+    static async createQuickCommunicatorMacro(characterName, portraitPath, soundPath, voiceoverPath, imagePath, style, fontSize, fontFamily = null, typingSpeed = null, messageWidth = null, postImageToChat = null) {
         if (!game.user.can('MACRO_SCRIPT')) {
             ui.notifications.warn(game.i18n.localize('LANCER.Settings.Warnings.CreateMacroTextPerm'));
             return;
@@ -1123,6 +1251,8 @@ game.modules.get('lancer-communicator').api.sendCommunicatorMessage(
 
         const escapedName = this._escapeHtml(characterName);
         const typingSpeedArg = typingSpeed !== null ? typingSpeed : 'null';
+        const messageWidthArg = messageWidth !== null ? messageWidth : 'null';
+        const postImageToChatArg = postImageToChat !== null ? postImageToChat : 'null';
         const globalTypingSpeed = game.settings.get('lancer-communicator', 'globalTypingSpeed');
 
         // Генерируем опции стилей для селекта
@@ -1160,11 +1290,13 @@ game.modules.get('lancer-communicator').api.sendCommunicatorMessage(
                         const escapedPortraitPath = portraitPath.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/`/g, '\\`');
                         const escapedSoundPath = soundPath.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/`/g, '\\`');
                         const escapedVoiceoverPath = voiceoverPath.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/`/g, '\\`');
+                        const escapedImagePath = imagePath.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/`/g, '\\`');
 
                         const commandText = `// Lancer Communicator Quick Macro
 (async () => {
     const globalTypingSpeed = game.settings.get('lancer-communicator', 'globalTypingSpeed');
     const defaultFontSize = game.settings.get('lancer-communicator', 'messageFontSize') || ${fontSize};
+    const defaultMessageWidth = game.settings.get('lancer-communicator', 'lastMessageWidth') || ${messageWidthArg !== 'null' ? messageWidthArg : 40};
     
     const styleOptions = \`${styleOptions}\`;
     
@@ -1178,10 +1310,10 @@ game.modules.get('lancer-communicator').api.sendCommunicatorMessage(
                         <textarea id="quickMessageInput" rows="4" style="width:100%"></textarea>
                     </div>
                     <div class="lcm-form-group">
-                        <label>\${game.i18n.localize('LANCER.Settings.typingSpeed')} <small style="color:#999;">(\${game.i18n.localize('LANCER.Settings.globalTypingSpeed')}: \${globalTypingSpeed})</small></label>
+                        <label>\${game.i18n.localize('LANCER.Settings.typingSpeed')} <small style="color:#999;">(\\ \${game.i18n.localize('LANCER.Settings.globalTypingSpeed')}: \\ \${globalTypingSpeed})</small></label>
                         <div class="lcm-input-group" style="align-items:center;">
                             <input type="checkbox" id="quick-use-global-speed" checked style="width:auto;margin-right:5px;">
-                            <label for="quick-use-global-speed" style="font-weight:normal;font-size:12px;margin-right:10px;">\${game.i18n.localize('LANCER.Settings.useGlobalSpeed')}</label>
+                            <label for="quick-use-global-speed" style="font-weight:normal;font-size:12px;margin-right:10px;">\\ \${game.i18n.localize('LANCER.Settings.useGlobalSpeed')}</label>
                         </div>
                         <div class="lcm-input-group" id="quick-typing-speed-row" style="margin-top:5px;opacity:0.5;pointer-events:none;">
                             <input type="range" id="quick-typing-speed-input" min="50" max="180" step="10" value="${typingSpeedArg !== 'null' ? typingSpeedArg : globalTypingSpeed}">
@@ -1189,15 +1321,22 @@ game.modules.get('lancer-communicator').api.sendCommunicatorMessage(
                         </div>
                     </div>
                     <div class="lcm-form-group">
-                        <label>\${game.i18n.localize('LANCER.Settings.FontSize')}</label>
+                        <label>\\ \${game.i18n.localize('LANCER.Settings.FontSize')}</label>
                         <div class="lcm-input-group">
-                            <input type="range" id="quick-font-size-input" min="10" max="32" step="1" value="\${defaultFontSize}">
-                            <span id="quick-font-size-display">\${defaultFontSize}px</span>
+                            <input type="range" id="quick-font-size-input" min="10" max="32" step="1" value="\\ \${defaultFontSize}">
+                            <span id="quick-font-size-display">\\ \${defaultFontSize}px</span>
                         </div>
                     </div>
                     <div class="lcm-form-group">
-                        <label>\${game.i18n.localize('LANCER.Settings.MessageStyle')}</label>
-                        <select id="quick-style-select">\${styleOptions}</select>
+                        <label>\\ \${game.i18n.localize('LANCER.Settings.MessageWidth')}</label>
+                        <div class="lcm-input-group">
+                            <input type="range" id="quick-message-width-input" min="20" max="90" step="5" value="\\ \${defaultMessageWidth}">
+                            <span id="quick-message-width-display">\\ \${defaultMessageWidth}%</span>
+                        </div>
+                    </div>
+                    <div class="lcm-form-group">
+                        <label>\\ \${game.i18n.localize('LANCER.Settings.MessageStyle')}</label>
+                        <select id="quick-style-select">\\ \${styleOptions}</select>
                     </div>
                 </form>
             \`,
@@ -1211,8 +1350,9 @@ game.modules.get('lancer-communicator').api.sendCommunicatorMessage(
                         const useGlobalSpeed = form.querySelector('#quick-use-global-speed').checked;
                         const typingSpeed = useGlobalSpeed ? null : Number(form.querySelector('#quick-typing-speed-input').value);
                         const fontSize = Number(form.querySelector('#quick-font-size-input').value);
+                        const messageWidth = Number(form.querySelector('#quick-message-width-input').value);
                         const style = form.querySelector('#quick-style-select').value;
-                        resolve({ message, typingSpeed, fontSize, style });
+                        resolve({ message, typingSpeed, fontSize, messageWidth, style });
                     }
                 },
                 cancel: {
@@ -1251,9 +1391,16 @@ game.modules.get('lancer-communicator').api.sendCommunicatorMessage(
                 fontSizeInput.addEventListener('input', () => {
                     fontSizeDisplay.textContent = fontSizeInput.value + 'px';
                 });
+                
+                // Обработчик ширины окна сообщения
+                const messageWidthInput = dialog.querySelector('#quick-message-width-input');
+                const messageWidthDisplay = dialog.querySelector('#quick-message-width-display');
+                messageWidthInput.addEventListener('input', () => {
+                    messageWidthDisplay.textContent = messageWidthInput.value + '%';
+                });
             },
             close: () => resolve(null)
-        }).render(true);
+        }, { classes: ['dialog', 'lancer-communicator-dialog'] }).render(true);
     });
     
     if (result && result.message && result.message.trim()) {
@@ -1263,10 +1410,14 @@ game.modules.get('lancer-communicator').api.sendCommunicatorMessage(
             result.message,
             "${escapedSoundPath}",
             "${escapedVoiceoverPath}",
+            "${escapedImagePath}",
             result.style,
             result.fontSize,
             "${fontFamily || ''}",
-            result.typingSpeed
+            result.typingSpeed,
+            result.messageWidth,
+            null,
+            ${postImageToChatArg}
         );
     }
 })();`;
@@ -1290,7 +1441,7 @@ game.modules.get('lancer-communicator').api.sendCommunicatorMessage(
                 }
             },
             default: 'create'
-        }).render(true);
+        }, { classes: ['dialog', 'lancer-communicator-dialog'] }).render(true);
     }
 
     // ─── UTILITIES ─────────────────────────────────────────────────
@@ -1308,6 +1459,180 @@ game.modules.get('lancer-communicator').api.sendCommunicatorMessage(
         } catch (error) {
             console.error(`Lancer Communicator | File validation failed for ${path}:`, error);
             return false;
+        }
+    }
+    /**
+     * Открывает диалог просмотра и экспорта сохранённых сообщений
+     */
+    static openSaveMessagesDialog() {
+        const isGM = game.user.isGM;
+        const allowAccess = isGM || (game.settings.get('lancer-communicator', 'allowPlayersAccess') ?? true);
+
+        if (!allowAccess) {
+            ui.notifications.warn(game.i18n.localize('LANCER.Settings.Warnings.NoAccessPermission') || "Você não tem permissão para acessar os registros.");
+            return;
+        }
+
+        const allowExport = isGM || (game.settings.get('lancer-communicator', 'allowPlayersExport') ?? false);
+        const messages = this.savedMessages;
+        const count = messages.length;
+
+        // Build chat bubble messages
+        const bubbles = count === 0
+            ? `<div class="lcm-chat-empty">
+                   <i class="fas fa-satellite-dish lcm-chat-empty-icon"></i>
+                   <span>${game.i18n.localize('LANCER.Settings.ChatLog.Empty')}</span>
+               </div>`
+            : messages.map((m) => {
+                const ts = m.timestamp ? new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--';
+                const style = m.style || 'green';
+                const name = this._escapeHtml(m.characterName || '?');
+                const text = this._escapeHtml(m.message || '');
+                const initial = (m.characterName || '?').charAt(0).toUpperCase();
+                const portrait = m.portraitPath
+                    ? `<img src="${this._escapeHtml(m.portraitPath)}" alt="${name}" class="lcm-bubble-avatar" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+                    : '';
+                const isSelf = m.senderId === game.user.id;
+                const selfClass = isSelf ? ' lcm-bubble-row--self' : '';
+                const imageContent = m.imagePath 
+                    ? `<div style="margin-top:${text ? '8px' : '0'};"><img src="${this._escapeHtml(m.imagePath)}" onclick="new ImagePopout(this.getAttribute('src')).render(true);" style="max-width:100%; max-height:300px; object-fit:contain; border-radius:4px; cursor:pointer;" alt="Attached Image"></div>` 
+                    : '';
+                return `
+                <div class="lcm-bubble-row${selfClass}">
+                    <div class="lcm-bubble-avatar-wrap">
+                        ${portrait}
+                        <div class="lcm-bubble-initial lcm-bubble-initial--${style}"${portrait ? ' style="display:none"' : ''}>${initial}</div>
+                    </div>
+                    <div class="lcm-bubble-body">
+                        <div class="lcm-bubble-header">
+                            <span class="lcm-bubble-name lcm-bubble-name--${style}">${name}</span>
+                            <span class="lcm-bubble-ts">${ts}</span>
+                        </div>
+                        <div class="lcm-bubble lcm-bubble--${style}">
+                            ${text ? `<div>${text}</div>` : ''}
+                            ${imageContent}
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+
+        const header = `
+            <div class="lcm-chat-header">
+                <i class="fas fa-satellite-dish"></i>
+                <span>${game.i18n.localize('LANCER.Settings.ChatLog.Title')}</span>
+                <span class="lcm-chat-header-count">${count}</span>
+            </div>`;
+
+        const content = `
+            <div class="lancer-communicator-dialog lcm-save-dialog">
+                ${header}
+                <div class="lcm-chat-feed" id="lcm-chat-feed">
+                    ${bubbles}
+                </div>
+            </div>`;
+
+        const buttons = {};
+
+        if (allowExport) {
+            buttons.exportJson = {
+                icon: '<i class="fas fa-file-code"></i>',
+                label: game.i18n.localize('LANCER.Settings.ChatLog.ExportJSON'),
+                callback: () => this._downloadMessages('json')
+            };
+            buttons.exportTxt = {
+                icon: '<i class="fas fa-file-alt"></i>',
+                label: game.i18n.localize('LANCER.Settings.ChatLog.ExportTXT'),
+                callback: () => this._downloadMessages('txt')
+            };
+        }
+
+        if (isGM) {
+            buttons.clear = {
+                icon: '<i class="fas fa-trash"></i>',
+                label: game.i18n.localize('LANCER.Settings.ChatLog.Clear'),
+                callback: () => {
+                    this.savedMessages = [];
+                    ui.notifications.info(game.i18n.localize('LANCER.Settings.ChatLog.Cleared'));
+                }
+            };
+        }
+
+        buttons.close = {
+            icon: '<i class="fas fa-times"></i>',
+            label: game.i18n.localize('LANCER.Settings.Cancel')
+        };
+
+        const dlg = new Dialog({
+            title: game.i18n.localize('LANCER.Settings.ChatLog.Title'),
+            content,
+            buttons,
+            default: 'close',
+            render: (html) => {
+                // Scroll to bottom on open
+                const feed = html[0].querySelector('#lcm-chat-feed');
+                if (feed) feed.scrollTop = feed.scrollHeight;
+            }
+        }, {
+            width: 800,
+            height: 600,
+            classes: ['dialog', 'lcm-custom-dialog']
+        }).render(true);
+    }
+
+    /**
+    /**
+     * Скачивает сохранённые сообщения как файл
+     * @param {'json'|'txt'} format - Формат файла
+     */
+    static _downloadMessages(format) {
+        const messages = this.savedMessages;
+
+        // Verificação de segurança extra
+        if (!messages || messages.length === 0) {
+            ui.notifications.warn(game.i18n.localize('LANCER.Settings.ChatLog.Empty'));
+            return;
+        }
+
+        let content, mime, ext;
+
+        if (format === 'json') {
+            content = JSON.stringify(messages, null, 2);
+            mime = 'application/json';
+            ext = 'json';
+        } else {
+            // Formato TXT com limpeza de HTML e melhor espaçamento
+            content = messages.map(m => {
+                const ts = m.timestamp ? new Date(m.timestamp).toLocaleString() : '--';
+                const charName = m.characterName || game.i18n.localize('LANCER.Unknown') || 'Unknown';
+
+                // Remove tags HTML se a mensagem for texto rico (opcional, mas recomendado para TXT)
+                const cleanMessage = m.message ? m.message.replace(/<[^>]+>/g, '') : '';
+                const imageNote = m.imagePath ? ` [Image Attached: ${m.imagePath}]` : '';
+
+                return `[${ts}] ${charName}: ${cleanMessage}${imageNote}`;
+            }).join('\n\n'); // Dupla quebra de linha para separar melhor cada mensagem
+
+            mime = 'text/plain';
+            ext = 'txt';
+        }
+
+        const date = new Date().toISOString().slice(0, 10);
+        const filename = `communicator-log-${date}.${ext}`;
+
+        // Utiliza o helper nativo do Foundry VTT se disponível (muito mais limpo)
+        if (typeof saveDataToFile === 'function') {
+            saveDataToFile(content, mime, filename);
+        } else {
+            // Fallback clássico caso a função nativa falhe/não exista
+            const blob = new Blob([content], { type: mime });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
     }
 }

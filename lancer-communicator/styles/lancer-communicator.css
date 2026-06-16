@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;700&family=Handjet:wght@100..900&family=Orbitron:wght@400;700&family=Share+Tech+Mono&family=Space+Mono:wght@400;700&display=swap');
+
 @font-face {
     font-family: 'MOSCOW2024';
     src: url('fonts/MOSCOW2024.otf') format('opentype');
@@ -23,29 +25,103 @@
 :root {
     --message-font-size: 14px;
     --message-font: 'MOSCOW2024';
+
+    /* Lancer UI Theme Variables */
+    --lcm-neon-green: #03FB8D;
+    --lcm-neon-orange: #FF9F1C;
+    --lcm-neon-blue: #00A4FF;
+    --lcm-neon-red: #FF4444;
+
+    --lcm-bg-dark: rgba(10, 12, 16, 0.96);
+    --lcm-bg-panel: rgba(20, 26, 32, 0.7);
+    --lcm-bg-input: rgba(5, 7, 10, 0.85);
+
+    --lcm-border-neon: 1px solid var(--lcm-neon-green);
+    --lcm-border-neon-dim: 1px solid rgba(3, 251, 141, 0.25);
+    --lcm-glow-green: 0 0 12px rgba(3, 251, 141, 0.4);
+    --lcm-glow-orange: 0 0 12px rgba(255, 159, 28, 0.4);
+
+    --lcm-grid-pattern: linear-gradient(0deg, rgba(3, 251, 141, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(3, 251, 141, 0.02) 1px, transparent 1px);
+    --lcm-grid-size: 20px 20px;
 }
 
-/* ─── Dialog Form ────────────────────────────────────────────── */
+/* ─── Dialog Form & High-Tech HUD Styling ──────────────────────── */
+
+/* Custom Window Styling for both dialogs */
+.window-app.lancer-communicator-dialog,
+.window-app.lcm-custom-dialog {
+    background: var(--lcm-bg-dark) !important;
+    background-image: var(--lcm-grid-pattern) !important;
+    background-size: var(--lcm-grid-size) !important;
+    border: 1px solid rgba(3, 251, 141, 0.4) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.85),
+        0 0 15px rgba(3, 251, 141, 0.25) !important;
+    border-radius: 4px !important;
+    backdrop-filter: blur(8px) !important;
+}
+
+/* Make sure Foundry's standard window content doesn't cover it up */
+.window-app.lancer-communicator-dialog .window-content,
+.window-app.lcm-custom-dialog .window-content {
+    background: transparent !important;
+    color: #ffffff !important;
+    font-family: 'Share Tech Mono', monospace !important;
+    gap: 10px;
+}
+
+.lancer-communicator-dialog .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
 
 .lancer-communicator-dialog .lcm-form-group {
-    margin-bottom: 10px;
+    margin-bottom: 12px;
     display: flex;
     flex-direction: column;
 }
 
-.lancer-communicator-dialog label {
-    margin-bottom: 5px;
+.lancer-communicator-dialog label,
+.lcm-custom-dialog label {
+    margin-bottom: 6px;
     font-weight: bold;
+    color: var(--lcm-neon-green) !important;
+    font-family: 'Share Tech Mono', monospace !important;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-shadow: 0 0 5px rgba(3, 251, 141, 0.3);
 }
 
 .lancer-communicator-dialog input[type="text"],
-.lancer-communicator-dialog textarea {
+.lancer-communicator-dialog textarea,
+.lancer-communicator-dialog select,
+.lcm-custom-dialog input[type="text"],
+.lcm-custom-dialog textarea,
+.lcm-custom-dialog select {
     width: 100%;
-    padding: 5px;
-    border-radius: 4px;
+    padding: 6px 10px;
+    border-radius: 3px;
     max-height: 200px;
     resize: vertical;
     overflow-y: auto;
+    background: var(--lcm-bg-input) !important;
+    border: 1px solid rgba(3, 251, 141, 0.3) !important;
+    color: #ffffff !important;
+    font-family: 'Share Tech Mono', monospace !important;
+    transition: all 0.2s ease-in-out !important;
+}
+
+.lancer-communicator-dialog input[type="text"]:focus,
+.lancer-communicator-dialog textarea:focus,
+.lancer-communicator-dialog select:focus,
+.lcm-custom-dialog input[type="text"]:focus,
+.lcm-custom-dialog textarea:focus,
+.lcm-custom-dialog select:focus {
+    border-color: var(--lcm-neon-green) !important;
+    box-shadow: var(--lcm-glow-green) !important;
+    outline: none !important;
 }
 
 .lancer-communicator-dialog .lcm-input-group {
@@ -57,33 +133,261 @@
 .lancer-communicator-dialog .lcm-input-group input {
     flex-grow: 1;
     height: 26px;
+    color: #ffffff;
 }
 
+/* Secondary Action Buttons in Input Groups */
 .lancer-communicator-dialog .lcm-input-group button {
-    height: 26px;
-    padding: 0 10px;
-    color: black;
-    cursor: pointer;
-    font-size: 12px;
-    white-space: nowrap;
+    height: 26px !important;
+    padding: 0 12px !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: #ffffff !important;
+    cursor: pointer !important;
+    font-size: 11px !important;
+    font-family: 'Share Tech Mono', monospace !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    border-radius: 3px !important;
+    transition: all 0.2s ease !important;
+    white-space: nowrap !important;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
+.lancer-communicator-dialog .lcm-input-group button:hover {
+    background: rgba(3, 251, 141, 0.1) !important;
+    border-color: var(--lcm-neon-green) !important;
+    box-shadow: 0 0 8px rgba(3, 251, 141, 0.3) !important;
+    color: var(--lcm-neon-green) !important;
+}
+
+/* Special styling for "Auto" calculation button */
+.lancer-communicator-dialog .lcm-input-group button#auto-speed-btn {
+    border-color: rgba(255, 159, 28, 0.4) !important;
+}
+
+.lancer-communicator-dialog .lcm-input-group button#auto-speed-btn:hover {
+    border-color: var(--lcm-neon-orange) !important;
+    color: var(--lcm-neon-orange) !important;
+    box-shadow: 0 0 8px rgba(255, 159, 28, 0.3) !important;
+    background: rgba(255, 159, 28, 0.1) !important;
+}
+
+/* Custom Sliders */
 .lancer-communicator-dialog input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    background: rgba(0, 0, 0, 0.5) !important;
+    height: 6px !important;
+    border-radius: 3px !important;
+    border: 1px solid rgba(3, 251, 141, 0.2) !important;
+    outline: none !important;
     flex-grow: 1;
 }
 
-.lancer-communicator-dialog #font-size-display {
-    width: 50px;
-    text-align: right;
+.lancer-communicator-dialog input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px !important;
+    height: 14px !important;
+    background: var(--lcm-neon-orange) !important;
+    border: 1px solid #ffffff !important;
+    border-radius: 2px !important;
+    box-shadow: var(--lcm-glow-orange) !important;
+    cursor: pointer !important;
+    transition: transform 0.1s ease !important;
 }
 
+.lancer-communicator-dialog input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+.lancer-communicator-dialog input[type="range"]::-moz-range-thumb {
+    width: 14px !important;
+    height: 14px !important;
+    background: var(--lcm-neon-orange) !important;
+    border: 1px solid #ffffff !important;
+    border-radius: 2px !important;
+    box-shadow: var(--lcm-glow-orange) !important;
+    cursor: pointer !important;
+    transition: transform 0.1s ease !important;
+}
+
+.lancer-communicator-dialog input[type="range"]::-moz-range-thumb:hover {
+    transform: scale(1.2);
+}
+
+/* Digital Readouts for Sliders */
+.lancer-communicator-dialog #font-size-display,
+.lancer-communicator-dialog #message-width-display,
+.lancer-communicator-dialog #typing-speed-display {
+    font-family: 'Share Tech Mono', monospace !important;
+    font-weight: bold !important;
+    color: var(--lcm-neon-green) !important;
+    text-shadow: 0 0 5px rgba(3, 251, 141, 0.5) !important;
+    width: 50px !important;
+    text-align: right !important;
+}
+
+/* High-tech Hints */
 .lancer-communicator-dialog .lcm-hint {
-    display: block;
-    margin-top: 4px;
-    color: #aaa;
+    display: block !important;
+    margin-top: 4px !important;
+    color: rgba(255, 255, 255, 0.4) !important;
+    font-size: 10.5px !important;
+    font-family: 'Share Tech Mono', monospace !important;
+    letter-spacing: 0.02em !important;
+}
+
+/* Post to Chat toggle row */
+.lancer-communicator-dialog .lcm-post-to-chat-row {
+    margin-top: 8px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(3, 251, 141, 0.2) !important;
+}
+
+.lancer-communicator-dialog .lcm-toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-bottom: 0;
+    user-select: none;
+}
+
+/* Custom Checkboxes */
+.lancer-communicator-dialog input[type="checkbox"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px !important;
+    height: 14px !important;
+    border: 1px solid rgba(3, 251, 141, 0.4) !important;
+    background: var(--lcm-bg-input) !important;
+    border-radius: 2px !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    position: relative !important;
+    transition: all 0.15s ease !important;
+    flex-shrink: 0;
+}
+
+.lancer-communicator-dialog input[type="checkbox"]:checked {
+    border-color: var(--lcm-neon-green) !important;
+    background: rgba(3, 251, 141, 0.15) !important;
+    box-shadow: var(--lcm-glow-green) !important;
+}
+
+.lancer-communicator-dialog input[type="checkbox"]:checked::after {
+    content: "" !important;
+    width: 6px !important;
+    height: 6px !important;
+    background: var(--lcm-neon-green) !important;
+    box-shadow: 0 0 4px var(--lcm-neon-green) !important;
+    border-radius: 1px !important;
+}
+
+.lancer-communicator-dialog .lcm-toggle-label span {
+    font-size: 13px;
+    color: #ddd;
+}
+
+/* Dialog Header Styling */
+.window-app.lancer-communicator-dialog .window-header,
+.window-app.lcm-custom-dialog .window-header {
+    background: rgba(0, 0, 0, 0.5) !important;
+    border-bottom: 1px solid rgba(3, 251, 141, 0.3) !important;
+    color: var(--lcm-neon-green) !important;
+    font-family: 'Share Tech Mono', monospace !important;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    padding: 6px 12px !important;
+}
+
+.window-app.lancer-communicator-dialog .window-header .window-title,
+.window-app.lcm-custom-dialog .window-header .window-title {
+    font-weight: bold !important;
+    font-size: 13px !important;
+    text-shadow: 0 0 8px rgba(3, 251, 141, 0.4) !important;
+}
+
+.window-app.lancer-communicator-dialog .window-header a.close,
+.window-app.lcm-custom-dialog .window-header a.close {
+    color: rgba(255, 255, 255, 0.6) !important;
+    transition: all 0.2s ease !important;
+    font-size: 11px !important;
+}
+
+.window-app.lancer-communicator-dialog .window-header a.close:hover,
+.window-app.lcm-custom-dialog .window-header a.close:hover {
+    color: var(--lcm-neon-red) !important;
+    text-shadow: 0 0 5px rgba(255, 68, 68, 0.5) !important;
+}
+
+/* Dialog Footer and Buttons styling */
+.window-app.lancer-communicator-dialog .dialog-buttons,
+.window-app.lcm-custom-dialog .dialog-buttons {
+    background: rgba(0, 0, 0, 0.4) !important;
+    border-top: 1px solid rgba(3, 251, 141, 0.25) !important;
+    padding: 10px !important;
+    gap: 8px !important;
+    flex: 0 !important;
+    display: flex !important;
+}
+
+.window-app.lancer-communicator-dialog .dialog-buttons .dialog-button,
+.window-app.lcm-custom-dialog .dialog-buttons .dialog-button {
+    font-family: 'Share Tech Mono', monospace !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+    font-weight: bold !important;
+    border-radius: 3px !important;
+    border: 1px solid rgba(3, 251, 141, 0.4) !important;
+    background: rgba(3, 251, 141, 0.05) !important;
+    color: var(--lcm-neon-green) !important;
+    height: 32px !important;
+    line-height: 30px !important;
+    transition: all 0.25s ease-in-out !important;
+    cursor: pointer !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    flex: 1 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.window-app.lancer-communicator-dialog .dialog-buttons .dialog-button:hover,
+.window-app.lcm-custom-dialog .dialog-buttons .dialog-button:hover,
+.window-app.lancer-communicator-dialog .dialog-buttons .dialog-button:focus,
+.window-app.lcm-custom-dialog .dialog-buttons .dialog-button:focus {
+    background: rgba(3, 251, 141, 0.15) !important;
+    border-color: var(--lcm-neon-green) !important;
+    box-shadow: var(--lcm-glow-green) !important;
+    color: #ffffff !important;
+    outline: none !important;
+}
+
+/* Button style overrides for Cancel/Close button */
+.window-app.lancer-communicator-dialog .dialog-buttons .dialog-button.cancel,
+.window-app.lcm-custom-dialog .dialog-buttons .dialog-button.close,
+.window-app.lcm-custom-dialog .dialog-buttons .dialog-button.clear {
+    border-color: rgba(255, 68, 68, 0.4) !important;
+    background: rgba(255, 68, 68, 0.05) !important;
+    color: var(--lcm-neon-red) !important;
+}
+
+.window-app.lancer-communicator-dialog .dialog-buttons .dialog-button.cancel:hover,
+.window-app.lcm-custom-dialog .dialog-buttons .dialog-button.close:hover,
+.window-app.lcm-custom-dialog .dialog-buttons .dialog-button.clear:hover {
+    background: rgba(255, 68, 68, 0.15) !important;
+    border-color: var(--lcm-neon-red) !important;
+    box-shadow: 0 0 10px rgba(255, 68, 68, 0.4) !important;
+    color: #ffffff !important;
 }
 
 /* ─── Message Container (Base) ───────────────────────────────── */
@@ -91,8 +395,8 @@
 #lancer-communicator-message.top-screen {
     position: fixed;
     top: 90px;
-    left: 30%;
-    width: 40%;
+    left: var(--message-left, 30%);
+    width: var(--message-width, 40%);
     display: flex;
     justify-content: center;
     z-index: 1000;
@@ -148,8 +452,15 @@
 }
 
 @keyframes blink {
-    0%, 100% { opacity: 0; }
-    50% { opacity: 1; }
+
+    0%,
+    100% {
+        opacity: 0;
+    }
+
+    50% {
+        opacity: 1;
+    }
 }
 
 /* Имя персонажа */
@@ -166,10 +477,11 @@
 
 /* Анимация схлопывания в центр */
 @keyframes tv-collapse {
-    0%   {
+    0% {
         opacity: 1;
         transform: scale(1);
     }
+
     100% {
         opacity: 0;
         transform: scale(0);
@@ -209,13 +521,22 @@
     color: #00A4FF;
 }
 
-#lancer-communicator-message.style-blue .lcm-message-text { color: #00A4FF; }
-#lancer-communicator-message.style-blue .lcm-character-name { color: #00A4FF; }
+#lancer-communicator-message.style-blue .lcm-message-text {
+    color: #00A4FF;
+}
+
+#lancer-communicator-message.style-blue .lcm-character-name {
+    color: #00A4FF;
+}
+
 #lancer-communicator-message.style-blue .lcm-portrait {
     border-color: #00A4FF;
     box-shadow: 0 0 10px rgba(0, 164, 255, 0.5);
 }
-#lancer-communicator-message.style-blue .lcm-message-text::after { color: #00A4FF; }
+
+#lancer-communicator-message.style-blue .lcm-message-text::after {
+    color: #00A4FF;
+}
 
 /* ─── Style: Yellow ──────────────────────────────────────────── */
 
@@ -226,13 +547,22 @@
     color: #FFD700;
 }
 
-#lancer-communicator-message.style-yellow .lcm-message-text { color: #FFD700; }
-#lancer-communicator-message.style-yellow .lcm-character-name { color: #FFD700; }
+#lancer-communicator-message.style-yellow .lcm-message-text {
+    color: #FFD700;
+}
+
+#lancer-communicator-message.style-yellow .lcm-character-name {
+    color: #FFD700;
+}
+
 #lancer-communicator-message.style-yellow .lcm-portrait {
     border-color: #FFD700;
     box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
 }
-#lancer-communicator-message.style-yellow .lcm-message-text::after { color: #FFD700; }
+
+#lancer-communicator-message.style-yellow .lcm-message-text::after {
+    color: #FFD700;
+}
 
 /* ─── Style: Red ─────────────────────────────────────────────── */
 
@@ -243,13 +573,22 @@
     color: #FF0000;
 }
 
-#lancer-communicator-message.style-red .lcm-message-text { color: #FF0000; }
-#lancer-communicator-message.style-red .lcm-character-name { color: #FF0000; }
+#lancer-communicator-message.style-red .lcm-message-text {
+    color: #FF0000;
+}
+
+#lancer-communicator-message.style-red .lcm-character-name {
+    color: #FF0000;
+}
+
 #lancer-communicator-message.style-red .lcm-portrait {
     border-color: #FF0000;
     box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
 }
-#lancer-communicator-message.style-red .lcm-message-text::after { color: #FF0000; }
+
+#lancer-communicator-message.style-red .lcm-message-text::after {
+    color: #FF0000;
+}
 
 /* ─── Style: Damaged / Glitch ────────────────────────────────── */
 
@@ -299,8 +638,15 @@
 }
 
 @keyframes glitchOut {
-    0%   { opacity: 1;   transform: scale(1);    }
-    100% { opacity: 0;   transform: scale(0.95); }
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    100% {
+        opacity: 0;
+        transform: scale(0.95);
+    }
 }
 
 .lcm-communicator-container.style-damaged.collapsing {
@@ -316,48 +662,123 @@
     color: white;
 }
 
-#lancer-communicator-message.style-undertale .lcm-message-text { color: white; }
-#lancer-communicator-message.style-undertale .lcm-character-name { color: white; }
+#lancer-communicator-message.style-undertale .lcm-message-text {
+    color: white;
+}
+
+#lancer-communicator-message.style-undertale .lcm-character-name {
+    color: white;
+}
+
 #lancer-communicator-message.style-undertale .lcm-portrait {
     border-color: white;
     box-shadow: 0 0 10px rgba(255, 255, 0, 0.5);
 }
-#lancer-communicator-message.style-undertale .lcm-message-text::after { color: white; }
+
+#lancer-communicator-message.style-undertale .lcm-message-text::after {
+    color: white;
+}
 
 /* ─── Glitch / Shake Animations ──────────────────────────────── */
 
 @keyframes shake-border {
-    0%, 100% { transform: translate(0, 0) rotate(0deg); }
-    10%  { transform: translate(-1px, 1px) rotate(-0.5deg); }
-    20%  { transform: translate(1px, -1px) rotate(0.5deg); }
-    30%  { transform: translate(-1px, 0) rotate(-0.3deg); }
-    40%  { transform: translate(1px, 0) rotate(0.3deg); }
-    50%  { transform: translate(0, 1px) rotate(0.2deg); }
-    60%  { transform: translate(0, -1px) rotate(-0.2deg); }
+
+    0%,
+    100% {
+        transform: translate(0, 0) rotate(0deg);
+    }
+
+    10% {
+        transform: translate(-1px, 1px) rotate(-0.5deg);
+    }
+
+    20% {
+        transform: translate(1px, -1px) rotate(0.5deg);
+    }
+
+    30% {
+        transform: translate(-1px, 0) rotate(-0.3deg);
+    }
+
+    40% {
+        transform: translate(1px, 0) rotate(0.3deg);
+    }
+
+    50% {
+        transform: translate(0, 1px) rotate(0.2deg);
+    }
+
+    60% {
+        transform: translate(0, -1px) rotate(-0.2deg);
+    }
 }
 
 @keyframes lcm-portrait-shake {
-    0%, 100% { transform: translate(0, 0) rotate(0deg) scale(1); }
-    25%  { transform: translate(-2px, 1px) rotate(-0.5deg) scale(1.02); }
-    50%  { transform: translate(2px, -1px) rotate(0.5deg) scale(0.98); }
-    75%  { transform: translate(-1px, 2px) rotate(0.3deg) scale(1.01); }
+
+    0%,
+    100% {
+        transform: translate(0, 0) rotate(0deg) scale(1);
+    }
+
+    25% {
+        transform: translate(-2px, 1px) rotate(-0.5deg) scale(1.02);
+    }
+
+    50% {
+        transform: translate(2px, -1px) rotate(0.5deg) scale(0.98);
+    }
+
+    75% {
+        transform: translate(-1px, 2px) rotate(0.3deg) scale(1.01);
+    }
 }
 
 @keyframes text-glitch {
-    0%, 100% { transform: translate(0, 0); text-shadow: none; }
-    25%  { transform: translate(-2px, -2px); text-shadow: 2px 2px 0 rgba(255, 0, 0, 0.3); }
-    50%  { transform: translate(2px, 2px); text-shadow: -2px -2px 0 rgba(0, 0, 255, 0.3); }
-    75%  { transform: translate(-2px, 2px); text-shadow: 2px -2px 0 rgba(0, 255, 0, 0.3); }
+
+    0%,
+    100% {
+        transform: translate(0, 0);
+        text-shadow: none;
+    }
+
+    25% {
+        transform: translate(-2px, -2px);
+        text-shadow: 2px 2px 0 rgba(255, 0, 0, 0.3);
+    }
+
+    50% {
+        transform: translate(2px, 2px);
+        text-shadow: -2px -2px 0 rgba(0, 0, 255, 0.3);
+    }
+
+    75% {
+        transform: translate(-2px, 2px);
+        text-shadow: 2px -2px 0 rgba(0, 255, 0, 0.3);
+    }
 }
 
 /* ─── Text Shake (Uppercase animation) ───────────────────────── */
 
 @keyframes lcm-shake-text {
-    0%   { transform: translateX(0) translateY(0); }
-    25%  { transform: translateX(-2px) translateY(1px); }
-    50%  { transform: translateX(2px) translateY(-1px); }
-    75%  { transform: translateX(-1px) translateY(-1px); }
-    100% { transform: translateX(0) translateY(0); }
+    0% {
+        transform: translateX(0) translateY(0);
+    }
+
+    25% {
+        transform: translateX(-2px) translateY(1px);
+    }
+
+    50% {
+        transform: translateX(2px) translateY(-1px);
+    }
+
+    75% {
+        transform: translateX(-1px) translateY(-1px);
+    }
+
+    100% {
+        transform: translateX(0) translateY(0);
+    }
 }
 
 .lcm-shake-text {
@@ -394,8 +815,372 @@
 }
 
 @keyframes lcm-chat-portrait-glitch {
-    0%, 100% { transform: translate(0, 0) rotate(0deg) skew(-5deg) scale(1); }
-    25%  { transform: translate(-2px, 1px) rotate(-0.5deg) skew(-5deg) scale(1.02); }
-    50%  { transform: translate(2px, -1px) rotate(0.5deg) skew(-5deg) scale(0.98); }
-    75%  { transform: translate(-1px, 2px) rotate(0.3deg) skew(-5deg) scale(1.01); }
+
+    0%,
+    100% {
+        transform: translate(0, 0) rotate(0deg) skew(-5deg) scale(1);
+    }
+
+    25% {
+        transform: translate(-2px, 1px) rotate(-0.5deg) skew(-5deg) scale(1.02);
+    }
+
+    50% {
+        transform: translate(2px, -1px) rotate(0.5deg) skew(-5deg) scale(0.98);
+    }
+
+    75% {
+        transform: translate(-1px, 2px) rotate(0.3deg) skew(-5deg) scale(1.01);
+    }
+}
+
+/* ─── Save Messages Dialog ───────────────────────────────────── */
+
+/* Per-style colour variables used by bubbles & names */
+:root {
+    --lcm-c-green: #03FB8D;
+    --lcm-c-blue: #00A4FF;
+    --lcm-c-yellow: #FFD700;
+    --lcm-c-red: #FF4444;
+    --lcm-c-damaged: #FF2222;
+    --lcm-c-undertale: #ffffff;
+}
+
+/* Outer wrapper */
+.lcm-save-dialog {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 0;
+    background: transparent;
+}
+
+/* ── Terminal header bar ── */
+.lcm-chat-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: rgba(3, 251, 141, 0.08);
+    border-bottom: 1px solid rgba(3, 251, 141, 0.35);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 16px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #03FB8D;
+}
+
+.lcm-chat-header i {
+    font-size: 14px;
+    animation: lcm-pulse 2s ease-in-out infinite;
+}
+
+@keyframes lcm-pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.4;
+    }
+}
+
+.lcm-chat-header span:nth-child(2) {
+    flex: 1;
+}
+
+.lcm-chat-header-count {
+    background: rgba(3, 251, 141, 0.18);
+    border: 1px solid rgba(3, 251, 141, 0.5);
+    border-radius: 10px;
+    padding: 0 7px;
+    font-size: 10px;
+    color: #03FB8D;
+    flex: 0 !important;
+}
+
+/* ── Scrollable feed ── */
+.lcm-chat-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 14px 12px;
+    overflow-y: auto;
+    max-height: 380px;
+    background: rgba(0, 0, 0, 0.7);
+    /* custom scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(3, 251, 141, 0.3) transparent;
+}
+
+.lcm-chat-feed::-webkit-scrollbar {
+    width: 4px;
+}
+
+.lcm-chat-feed::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.lcm-chat-feed::-webkit-scrollbar-thumb {
+    background: rgba(3, 251, 141, 0.3);
+    border-radius: 2px;
+}
+
+/* ── Empty state ── */
+.lcm-chat-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 40px 0;
+    color: #444;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 0.06em;
+}
+
+.lcm-chat-empty-icon {
+    font-size: 32px;
+    opacity: 0.25;
+}
+
+/* ── Bubble row layout ── */
+.lcm-bubble-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    animation: lcm-fadein 0.2s ease;
+}
+
+@keyframes lcm-fadein {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── Avatar ── */
+.lcm-bubble-avatar-wrap {
+    flex-shrink: 0;
+    width: 80px;
+    height: 80px;
+    position: relative;
+}
+
+.lcm-bubble-avatar {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.lcm-bubble-initial {
+    width: 80px;
+    height: 80px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 18px;
+    font-weight: bold;
+    border: 1px solid currentColor;
+    background: rgba(0, 0, 0, 0.6);
+}
+
+/* Per-style initial colours */
+.lcm-bubble-initial--green {
+    color: var(--lcm-c-green);
+    border-color: rgba(3, 251, 141, 0.4);
+}
+
+.lcm-bubble-initial--blue {
+    color: var(--lcm-c-blue);
+    border-color: rgba(0, 164, 255, 0.4);
+}
+
+.lcm-bubble-initial--yellow {
+    color: var(--lcm-c-yellow);
+    border-color: rgba(255, 215, 0, 0.4);
+}
+
+.lcm-bubble-initial--red {
+    color: var(--lcm-c-red);
+    border-color: rgba(255, 68, 68, 0.4);
+}
+
+.lcm-bubble-initial--damaged {
+    color: var(--lcm-c-damaged);
+    border-color: rgba(255, 34, 34, 0.4);
+}
+
+.lcm-bubble-initial--undertale {
+    color: var(--lcm-c-undertale);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* ── Bubble body ── */
+.lcm-bubble-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+/* ── Header row: name + timestamp ── */
+.lcm-bubble-header {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.lcm-bubble-name {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 24px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.lcm-bubble-name--green {
+    color: var(--lcm-c-green);
+}
+
+.lcm-bubble-name--blue {
+    color: var(--lcm-c-blue);
+}
+
+.lcm-bubble-name--yellow {
+    color: var(--lcm-c-yellow);
+}
+
+.lcm-bubble-name--red {
+    color: var(--lcm-c-red);
+}
+
+.lcm-bubble-name--damaged {
+    color: var(--lcm-c-damaged);
+}
+
+.lcm-bubble-name--undertale {
+    color: var(--lcm-c-undertale);
+}
+
+.lcm-bubble-ts {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 20px;
+    color: #555;
+    white-space: nowrap;
+}
+
+
+
+/* ── Message bubble ── */
+.lcm-bubble {
+    padding: 8px 12px;
+    border-radius: 0 6px 6px 6px;
+    font-size: 20px;
+    line-height: 1.5;
+    word-break: break-word;
+    position: relative;
+    background: rgba(0, 0, 0, 0.55);
+    border-left: 2px solid currentColor;
+    color: #ddd;
+    font-family: var(--message-font, 'MOSCOW2024'), monospace;
+}
+
+/* Per-style bubble accent */
+.lcm-bubble--green {
+    border-color: rgba(3, 251, 141, 0.6);
+    box-shadow: inset 0 0 12px rgba(3, 251, 141, 0.04),
+        0 0 8px rgba(3, 251, 141, 0.08);
+}
+
+.lcm-bubble--blue {
+    border-color: rgba(0, 164, 255, 0.6);
+    box-shadow: inset 0 0 12px rgba(0, 164, 255, 0.04),
+        0 0 8px rgba(0, 164, 255, 0.08);
+}
+
+.lcm-bubble--yellow {
+    border-color: rgba(255, 215, 0, 0.6);
+    box-shadow: inset 0 0 12px rgba(255, 215, 0, 0.04),
+        0 0 8px rgba(255, 215, 0, 0.08);
+}
+
+.lcm-bubble--red {
+    border-color: rgba(255, 68, 68, 0.6);
+    box-shadow: inset 0 0 12px rgba(255, 68, 68, 0.04),
+        0 0 8px rgba(255, 68, 68, 0.08);
+}
+
+.lcm-bubble--damaged {
+    border-color: rgba(255, 34, 34, 0.7);
+    box-shadow: inset 0 0 12px rgba(255, 0, 0, 0.07),
+        0 0 10px rgba(255, 0, 0, 0.12);
+    animation: text-glitch 1.8s infinite;
+}
+
+.lcm-bubble--undertale {
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.03),
+        0 0 8px rgba(255, 255, 255, 0.06);
+}
+
+/* ── Sidebar-tabs button ── */
+#lcm-save-messages-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    aspect-ratio: 1;
+    color: #03FB8D;
+    opacity: 0.75;
+    font-size: 16px;
+    cursor: pointer;
+    transition: opacity 0.2s, color 0.2s, text-shadow 0.2s, background 0.2s;
+    text-decoration: none;
+    border-radius: 4px;
+}
+
+#lcm-save-messages-btn:hover {
+    opacity: 1;
+    color: #fff;
+    background: rgba(3, 251, 141, 0.12);
+    text-shadow: 0 0 10px rgba(3, 251, 141, 0.9);
+}
+
+#use-global-speed {
+    margin-right: 0px;
+    width: 20px !important;
+    height: 20px !important;
+    flex: 0 0 20px !important;
+}
+
+/* ── Self Messages (Right alignment) ── */
+.lcm-bubble-row.lcm-bubble-row--self {
+    flex-direction: row-reverse;
+}
+
+.lcm-bubble-row.lcm-bubble-row--self .lcm-bubble-body {
+    align-items: flex-end;
+}
+
+.lcm-bubble-row.lcm-bubble-row--self .lcm-bubble-header {
+    flex-direction: row-reverse;
+}
+
+.lcm-bubble-row.lcm-bubble-row--self .lcm-bubble {
+    border-left: none;
+    border-right: 2px solid currentColor;
+    border-radius: 6px 0 6px 6px;
 }

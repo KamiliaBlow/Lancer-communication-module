@@ -21,6 +21,7 @@ export function registerAPI() {
          * @param {number} fontSize - Размер шрифта в пикселях
          * @param {string|null} fontFamily - Семейство шрифта
          * @param {number|null} typingSpeed - Скорость печати (null = использовать глобальную)
+         * @param {number|null} messageWidth - Ширина окна сообщения в процентах (20-90, null = глобальная)
          */
         sendCommunicatorMessage: LancerCommunicator.sendCommunicatorMessage.bind(LancerCommunicator),
 
